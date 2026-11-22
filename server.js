@@ -168,7 +168,11 @@ class Arena {
       react: 10, iq: .5, hand: .12, pat: 80, reactT: 0, mode: 'guard', modeT: 0, circ: 1, target: null, th: null, block: null, wx: 0, wy: 0, aimNoise: 0, skin: 's_default', hiltS: 'h_default', trailS: 't_default', kfx: 'k_default', lv: 1 };
   }
   botCosmetics(b) { const pick = (cat, pr) => { if (Math.random() > pr) return SHOP.find(s => s.cat === cat && s.price === 0).id; const L2 = SHOP.filter(s => s.cat === cat && s.price > 0); return L2[(Math.random() * L2.length) | 0].id; }; b.skin = pick('skin', .3); b.hiltS = pick('hilt', .25); b.trailS = pick('trail', .2); b.kfx = pick('kill', .2); }
-  setPersonality(b) { let r = Math.random(), P = PERS[0]; for (const q of PERS) { if (r < q.p) { P = q; break; } r -= q.p; } b.react = rnd(...P.react) | 0; b.iq = rnd(...P.iq); b.hand = rnd(...P.hand); b.pat = rnd(...P.pat) | 0; b.circ = Math.random() < .5 ? 1 : -1; }
+  setPersonality(b) { let r = Math.random(), P = PERS[0]; for (const q of PERS) { if (r < q.p) { P = q; break; } r -= q.p; } b.react = rnd(...P.react) | 0; b.iq = rnd(...P.iq); b.hand = rnd(...P.hand); b.pat = rnd(...P.pat) | 0; b.circ = Math.random() < .5 ? 1 : -1;
+    b.react0 = b.react;
+    // carattere: coraggio (sfida chi e' piu' grande), pentimento (a meta' attacco ci ripensa), arroganza (ignora i piccolissimi)
+    const c = Math.random(); b.courage = c < .3 ? rnd(.7, 1) : c < .8 ? rnd(.35, .7) : rnd(0, .35);
+    b.regret = Math.random() < .4 ? rnd(.3, .8) : rnd(0, .2); b.arrog = rnd(0, 1); b.scared = 0; b.scaredOf = null; }
   botModel() { const w = [40, 15, 12, 14, 8, 7, 4]; let r = Math.random() * 100; for (let i = 0; i < w.length; i++) { if (r < w[i]) return MODELS[i]; r -= w[i]; } return MODELS[0]; }
   rollBot(b) { b.name = NAMES[(Math.random() * NAMES.length) | 0]; b.col = COLORS[(Math.random() * 7) | 0]; b.model = this.botModel(); this.setPersonality(b); this.botCosmetics(b); b.lv = 1 + ((Math.random() ** 1.6) * 40 | 0); }
   spawn(p, m = 20) {
@@ -258,11 +262,17 @@ class Arena {
   botThink(b) {
     const r = radius(b.m), Ln = bladeLen(b), dumb = b.iq < .35, tick = this.tick, players = this.players;
     if (--b.reactT <= 0) {
-      b.reactT = b.react + ((Math.random() * b.react * .5) | 0);
+      // tempo di reazione variabile per tutti: a volte pronti, a volte distratti
+      if (Math.random() < .05) b.react = clamp(Math.round(b.react0 * rnd(.7, 1.5)), 3, 40);
+      b.reactT = Math.max(2, Math.round(b.react * rnd(.5, 1.8) * (Math.random() < .07 ? 2.5 : 1)));
+      const courage = b.courage ?? .5, fleeRatio = 1.4 + courage * 2.6, huntRatio = 1.25 + courage * 2.2, ignoreRatio = 3 + (1 - (b.arrog ?? .5)) * 4;
       let th = null, td = 1e9, pr = null, pd = 1e9;
       for (const o of players) { if (!o.alive || o === b) continue; const d = Math.hypot(o.x - b.x, o.y - b.y), reach = bladeLen(o) + radius(o.m);
-        if (!dumb || Math.random() < .4) { if (o.m > b.m * 1.8 && d < reach + r + 200 && d < td) { th = o; td = d; } }
-        if (o.m < b.m * 1.6 && d < 450 + 350 * b.iq && d < pd && tick - o.born > 150) { pr = o; pd = d; } }
+        // paura: solo chi e' MOLTO piu' grande (dipende dal coraggio), oppure chi ci ha appena fatto pentire
+        if ((!dumb || Math.random() < .4) && ((o.m > b.m * fleeRatio) || (b.scared > tick && b.scaredOf === o)) && d < reach + r + 200 && d < td) { th = o; td = d; }
+        // preda: anche piu' grande di noi se siamo coraggiosi; i giganti ignorano i piccolissimi finche' non si avvicinano troppo
+        const tiny = b.m > o.m * ignoreRatio && d > r + Ln * .6;
+        if (o.m < b.m * huntRatio && !tiny && d < 450 + 350 * b.iq && d < pd && tick - o.born > 150) { pr = o; pd = d; } }
       b.th = th; if (pr !== b.target) { b.target = pr; b.mode = 'guard'; b.modeT = 0; }
       b.block = null;
       if (!dumb) for (const o of players) { if (!o.alive || o === b) continue; const d = Math.hypot(o.x - b.x, o.y - b.y); if (d > bladeLen(o) + r + 30) continue;
@@ -294,9 +304,12 @@ class Arena {
         b.aimT = ang + b.aimNoise * .5;
         const theirFacing = Math.abs(angDiff(pr.a, Math.atan2(-dy, -dx)));
         const opening = pr.stun > 0 || (theirFacing > 1.1 && !pr.model.dbl) || b.counter > tick;
-        if ((opening && b.modeT > 12) || b.modeT > b.pat) { b.mode = 'strike'; b.modeT = 0; if (b.iq > .6 && b.m > 30 && d < guardD + 60 && Math.random() < .4) this.dash(b); }
+        if ((opening && b.modeT > 12) || b.modeT > b.pat * (1.3 - (b.courage || 0) * .8)) { b.mode = 'strike'; b.modeT = 0; if (b.iq > .6 && b.m > 30 && d < guardD + 60 && Math.random() < .4) this.dash(b); }
         if (Math.random() < .004) b.circ *= -1;
-      } else if (b.mode === 'strike') { mx = dx / d; my = dy / d; b.aimT = ang + Math.sin(b.modeT * .25) * .35 * b.circ; if (b.modeT > 28 + b.react) { b.mode = 'back'; b.modeT = 0; } }
+      } else if (b.mode === 'strike') { mx = dx / d; my = dy / d; b.aimT = ang + Math.sin(b.modeT * .25) * .35 * b.circ;
+        // pentimento: attaccando qualcuno piu' grande, alcuni ci ripensano e scappano
+        if (pr.m > b.m * 1.1 && Math.random() < (b.regret || 0) * .035) { b.mode = 'back'; b.modeT = 0; b.scared = tick + 90 + ((Math.random() * 120) | 0); b.scaredOf = pr; b.target = null; if (Math.random() < .5) this.dash(b); }
+        else if (b.modeT > 28 + b.react + (b.courage || 0) * 30) { b.mode = 'back'; b.modeT = 0; } }
       else { mx = -dx / d; my = -dy / d; b.aimT = ang; if (b.modeT > 20 + b.react || d > guardD + 30) { b.mode = 'guard'; b.modeT = 0; } }
     } else { mx = b.wx - b.x; my = b.wy - b.y; const l = Math.hypot(mx, my); if (l > 1) b.aimT = Math.atan2(my, mx); }
     if (b.block && b.block.alive) { const s = segsOf(this.bladesAt(b.block, b.block.x, b.block.y, b.block.a))[0]; b.aimT = Math.atan2((s[1] + s[3]) / 2 - b.y, (s[0] + s[2]) / 2 - b.x) + Math.sign(b.block.omega || 1) * .2; }
