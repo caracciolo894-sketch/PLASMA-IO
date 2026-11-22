@@ -358,7 +358,7 @@ const server = http.createServer((req, res) => {
         const base = process.env.BASE_URL || ('https://' + req.headers.host);
         const s = await stripe('POST', 'checkout/sessions', { mode: 'payment', line_items: { 0: { price: PRICE_IDS[pk.id], quantity: 1 } }, managed_payments: { enabled: 'true' },
           client_reference_id: a.id, metadata: { acct: a.id, pack: pk.id }, locale: 'auto',
-          branding_settings: { display_name: 'PLASMA.io', background_color: '#0b0d14', button_color: '#1fb6ff', border_style: 'rounded', icon: { type: 'url', url: base + '/brand/icon.png' } }, success_url: base + '/?paid={CHECKOUT_SESSION_ID}', cancel_url: base + '/' });
+          branding_settings: { display_name: 'DOOM GAMES', background_color: '#0b0d14', button_color: '#1fb6ff', border_style: 'rounded', icon: { type: 'url', url: base + '/brand/icon.png' } }, success_url: base + '/?paid={CHECKOUT_SESSION_ID}', cancel_url: base + '/' });
         a.pending.push(s.id); if (a.pending.length > 20) a.pending = a.pending.slice(-20); await store.put(a, true);
         out(200, { url: s.url });
       } catch (e) { console.error('checkout', e.message); out(500, { error: 'stripe', msg: e.message }); }
