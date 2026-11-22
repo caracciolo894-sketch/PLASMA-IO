@@ -35,7 +35,7 @@ const WORLD = 4200, PELLETS = 750, TAU = Math.PI * 2, MAX_HUMANS = 24, MIN_ENTIT
 const rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const angDiff = (a, b) => { let d = (a - b) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; };
 const radius = m => 12 + Math.sqrt(m) * 2.4;
-const bladeLen = p => (radius(p.m) * 1.5 + 40) * p.model.len * (1 + (PCT[p.hiltS] || 0) / 100);
+const bladeLen = p => (radius(p.m) * 1.5 + 40) * p.model.len * (1 + (PCT[p.hiltS] || 0) / 100) * (p.rageT > 0 ? 1.2 : 1);
 const bladeW = p => (4 + radius(p.m) * .08) * p.model.w;
 const r1 = v => Math.round(v * 10) / 10, r3 = v => Math.round(v * 1000) / 1000;
 
@@ -58,6 +58,7 @@ const levelOf = x => Math.floor(Math.sqrt((x || 0) / 120)) + 1;
 const dayKey = () => { const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Rome' })); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
 function seeded(s) { let x = (cyrb53(s) % 2147483646) + 1; return () => { x = x * 16807 % 2147483647; return x / 2147483647; }; }
 function freshQuests() { const R = seeded('q' + dayKey()), pool = [...QDEF], pick = []; while (pick.length < 3) pick.push(pool.splice((R() * pool.length) | 0, 1)[0]); return { day: dayKey(), list: pick.map((d, i) => ({ t: d.t, n: d.ns[i], r: d.r[i], p: 0, c: false, ok: false })) }; }
+const SKILLS = { s_frost: 1, s_void: 1, s_sun: 1, s_oni: 1 };
 const isUnlocked = (m, st) => !m.unlock || (m.unlock.kills && st.kills >= m.unlock.kills) || (m.unlock.mass && st.best >= m.unlock.mass);
 const SHOP_BY_ID = Object.fromEntries(SHOP.map(s => [s.id, s]));
 
@@ -181,7 +182,7 @@ class Arena {
       for (const o of this.players) { if (!o.alive || o === p) continue; let d = Math.hypot(o.x - x, o.y - y) - bladeLen(o) - radius(o.m); if (!o.bot) d -= 600; if (d < md) md = d; }
       if (md > bs) { bs = md; best = [x, y]; } if (bs > 700) break; }
     Object.assign(p, { x: best[0], y: best[1], vx: 0, vy: 0, m, alive: true, kills: 0, best: m, born: this.tick, dashT: 0, dashCd: 0, stun: 0, streak: 0, a: rnd(0, TAU), av: 0, counter: 0, mode: 'guard', modeT: 0, target: null, th: null, block: null, steady: 0 });
-    p.aPrev = p.a; p.aim = p.a; p.aimT = p.a; p.hitCd.clear(); p.ph = []; p.viewR = NaN;
+    p.aPrev = p.a; p.aim = p.a; p.aimT = p.a; p.hitCd.clear(); p.ph = []; p.viewR = NaN; p.slowT = 0; p.rageT = 0; p.hideT = 0; p.abCd = 0;
     this.events.push(['sp', this.info(p)]);
   }
   info(p) { return { id: p.id, n: p.name, b: p.bot ? 1 : 0, c: p.col, md: p.model.id, s: p.skin, h: p.hiltS, t: p.trailS, k: p.kfx, lv: p.lv, x: r1(p.x), y: r1(p.y), a: r3(p.a), m: r1(p.m), born: p.born }; }
@@ -194,9 +195,17 @@ class Arena {
   }
   removePlayer(p) { const i = this.players.indexOf(p); if (i >= 0) this.players.splice(i, 1); if (p.alive) { p.alive = false; this.dropMass(p.x, p.y, p.m * .6, p.col); } this.events.push(['rm', p.id]); for (const o of this.players) { if (o.target === p) o.target = null; if (o.th === p) o.th = null; if (o.block === p) o.block = null; } }
   // ---- logica ----
-  steer(p, mx, my) { const ml = Math.hypot(mx, my); if (ml > 1) { mx /= ml; my /= ml; } const sp = 4.3 * Math.pow(20 / p.m, .2) * (p.dashT > 0 ? 3 : 1) * (1 + (PCT[p.trailS] || 0) / 100); p.vx += (mx * sp - p.vx) * (p.dashT > 0 ? .35 : .16); p.vy += (my * sp - p.vy) * (p.dashT > 0 ? .35 : .16); }
+  steer(p, mx, my) { const ml = Math.hypot(mx, my); if (ml > 1) { mx /= ml; my /= ml; } const sp = 4.3 * Math.pow(20 / p.m, .2) * (p.dashT > 0 ? 3 : 1) * (1 + (PCT[p.trailS] || 0) / 100) * (p.slowT > 0 ? .55 : 1); p.vx += (mx * sp - p.vx) * (p.dashT > 0 ? .35 : .16); p.vy += (my * sp - p.vy) * (p.dashT > 0 ? .35 : .16); }
   turnBlade(p) { p.aPrev = p.a; const tf = p.model.turn * Math.pow(20 / p.m, .16) * (p.stun > 0 ? .35 : 1); const d = angDiff(p.aim, p.a), maxW = .5 * tf; p.av = p.av * .5 + d * .27 * Math.min(1.25, tf); p.av = clamp(p.av, -maxW, maxW); p.a += p.av; p.omega = p.a - p.aPrev; }
-  dash(p) { if (p.dashCd > 0 || p.m < 14 || !p.alive) return; p.m *= .97; p.dashT = 10; p.dashCd = 55; let dx = p.vx, dy = p.vy; const l = Math.hypot(dx, dy); if (l < .3) { dx = Math.cos(p.a); dy = Math.sin(p.a); } else { dx /= l; dy /= l; } p.vx = dx * 12; p.vy = dy * 12; this.events.push(['ds', p.id]); }
+  dash(p) { if (p.dashCd > 0 || p.m < 14 || !p.alive) return; p.m *= .97; p.dashT = 10; p.dashCd = 55; let dx = p.vx, dy = p.vy; const l = Math.hypot(dx, dy); if (l < .3) { dx = Math.cos(p.a); dy = Math.sin(p.a); } else { dx /= l; dy /= l; } p.vx = dx * 12; p.vy = dy * 12; this.events.push(['ds', p.id]);
+    // abilita' speciali delle skin piu' rare (pay to win): si attivano con lo SPAZIO, ricarica 6 secondi
+    const sk = p.skin; if (!SKILLS[sk] || (p.abCd || 0) > 0) return; p.abCd = 360;
+    const R = radius(p.m) * 2 + 150, ox = p.x, oy = p.y;
+    if (sk === 's_frost') { for (const o of this.players) if (o !== p && o.alive && Math.hypot(o.x - p.x, o.y - p.y) < R) o.slowT = 80; }
+    else if (sk === 's_sun') { for (const o of this.players) { if (o === p || !o.alive) continue; const ex = o.x - p.x, ey = o.y - p.y, d = Math.hypot(ex, ey) || 1; if (d > R) continue; const f = 6 + 14 * (1 - d / R); o.vx += ex / d * f; o.vy += ey / d * f; o.stun = Math.max(o.stun, 18); } }
+    else if (sk === 's_void') { const rr = radius(p.m); p.x = clamp(p.x + dx * 200, rr, WORLD - rr); p.y = clamp(p.y + dy * 200, rr, WORLD - rr); p.hideT = 100; for (const o of this.players) { if (o.target === p) o.target = null; if (o.th === p) o.th = null; } }
+    else if (sk === 's_oni') { p.m /= .97; p.dashT = 16; p.rageT = 180; }
+    this.events.push(['ab', p.id, sk, r1(ox), r1(oy), r1(R)]); }
   bladesAt(p, x, y, a) {
     const ign = Math.min(1, Math.max(.05, (this.tick - p.born) / 22)), r = radius(p.m), Ln = bladeLen(p) * ign, h1 = r * 1.05, M = p.model, out = [];
     for (const d of M.dbl ? [a, a + Math.PI] : [a]) {
@@ -267,7 +276,7 @@ class Arena {
       b.reactT = Math.max(2, Math.round(b.react * rnd(.5, 1.8) * (Math.random() < .07 ? 2.5 : 1)));
       const courage = b.courage ?? .5, fleeRatio = 1.4 + courage * 2.6, huntRatio = 1.25 + courage * 2.2, ignoreRatio = 3 + (1 - (b.arrog ?? .5)) * 4;
       let th = null, td = 1e9, pr = null, pd = 1e9;
-      for (const o of players) { if (!o.alive || o === b) continue; const d = Math.hypot(o.x - b.x, o.y - b.y), reach = bladeLen(o) + radius(o.m);
+      for (const o of players) { if (!o.alive || o === b || o.hideT > 0) continue; const d = Math.hypot(o.x - b.x, o.y - b.y), reach = bladeLen(o) + radius(o.m);
         // paura: solo chi e' MOLTO piu' grande (dipende dal coraggio), oppure chi ci ha appena fatto pentire
         if ((!dumb || Math.random() < .4) && ((o.m > b.m * fleeRatio) || (b.scared > tick && b.scaredOf === o)) && d < reach + r + 200 && d < td) { th = o; td = d; }
         // preda: anche piu' grande di noi se siamo coraggiosi; i giganti ignorano i piccolissimi finche' non si avvicinano troppo
@@ -330,7 +339,7 @@ class Arena {
         p.aPrev = p.a; const tf = p.model.turn * Math.pow(20 / p.m, .16) * (p.stun > 0 ? .35 : 1), maxW = .5 * tf * 1.25;
         const d = angDiff(p.ba, p.a); p.a += clamp(d, -maxW, maxW); p.omega = p.a - p.aPrev; p.av = p.omega; }
       p.steady = Math.abs(p.omega) * bladeLen(p) < 3 ? (p.steady || 0) + 1 : 0;
-      if (p.dashT > 0) p.dashT--; if (p.dashCd > 0) p.dashCd--; if (p.stun > 0) p.stun--;
+      if (p.dashT > 0) p.dashT--; if (p.dashCd > 0) p.dashCd--; if (p.stun > 0) p.stun--; if (p.slowT > 0) p.slowT--; if (p.rageT > 0) p.rageT--; if (p.hideT > 0) p.hideT--; if (p.abCd > 0) p.abCd--;
       if (p.m > 300) p.m -= (p.m - 300) * .00004;
       if (p.m > p.best) p.best = p.m;
       (p.ph || (p.ph = [])).push([this.tick, p.x, p.y]); if (p.ph.length > 20) p.ph.shift();
@@ -359,7 +368,7 @@ class Arena {
   }
   broadcast() {
     const P = [];
-    for (const p of this.players) if (p.alive) P.push([p.id, r1(p.x), r1(p.y), r3(p.a), r1(p.m), p.kills, (p.dashT > 0 ? 1 : 0) | (p.stun > 0 ? 2 : 0), r1(p.vx), r1(p.vy)]);
+    for (const p of this.players) if (p.alive) P.push([p.id, r1(p.x), r1(p.y), r3(p.a), r1(p.m), p.kills, (p.dashT > 0 ? 1 : 0) | (p.stun > 0 ? 2 : 0) | (p.slowT > 0 ? 4 : 0) | (p.rageT > 0 ? 8 : 0) | (p.hideT > 0 ? 16 : 0), r1(p.vx), r1(p.vy)]);
     const msg = { t: 's', k: this.tick, p: P };
     if (this.events.length) msg.e = this.events;
     if (this.orbAdds.length) msg.oa = this.orbAdds.map(o => [o.id, r1(o.x), r1(o.y), r1(o.v), o.col, r1(o.vx), r1(o.vy), o.life]);
