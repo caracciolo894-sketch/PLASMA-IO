@@ -624,7 +624,7 @@ function netEvent(e){const k=e[0];
   else if(k==='st'){storm.on=true;storm.x=e[1];storm.y=e[2];storm.t=900;if(state==='play'){banner('⚡ '+T('storm'),T('stormSub'),'#ffd23d');tone(220,880,.6,'sawtooth',.05);}}
   else if(k==='st0'){storm.on=false;}}
 function netMsg(m){
-  if(m.t==='s'){net.srvTick=m.k;net.srvAt=performance.now();
+  if(m.t==='s'){const nowT=performance.now();if(net.srvAt&&m.k>net.srvTick){const exp=(m.k-net.srvTick)*16.667,dev=Math.abs((nowT-net.srvAt)-exp);net.jit=(net.jit||0)*.92+dev*.08;}net.srvTick=m.k;net.srvAt=nowT;
     for(const r of m.p){const p=net.byId.get(r[0]);if(!p)continue;p.hist=p.hist||[];p.hist.push([m.k,r[1],r[2],r[3],r[4],r[7],r[8],r[6]]);if(p.hist.length>24)p.hist.shift();p.kills=r[5];}
     if(m.e)for(const e of m.e)net.q.push([m.k,e]);
     if(m.oa)for(const a of m.oa)net.q.push([m.k,['oa',a]]);
@@ -685,7 +685,9 @@ function netStep(){
   // stima del tick del server
   const target=net.srvTick+(performance.now()-net.srvAt)*.06;
   net.est=Math.abs(target-net.est)>20?target:net.est+1+(target-net.est)*.05;
-  const R=net.est-3.5;tick=Math.floor(net.est);
+  // ritardo di interpolazione adattivo: piu' la connessione e' irregolare, piu' margine (niente scatti)
+  const want=clamp(3+(net.jit||0)*.12,3,9);net.delay=net.delay?net.delay+(want-net.delay)*.02:want;
+  const R=net.est-net.delay;tick=Math.floor(net.est);
   // eventi in coda fino al tempo di rendering
   while(net.q.length&&net.q[0][0]<=R+1){const e=net.q.shift()[1];
     if(e[0]==='oa')netOrb(e[1]);else if(e[0]==='or')netOrbRem(e[1],e[2]);else netEvent(e);}

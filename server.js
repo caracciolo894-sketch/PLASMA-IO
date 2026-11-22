@@ -141,7 +141,7 @@ async function checkPending(a, ws) {
 let NEXT_ID = 1;
 class Arena {
   constructor(id) {
-    this.id = id; this.tick = 0; this.players = []; this.orbs = new Map(); this.orbId = 1;
+    this.id = id; this.tick = 0; this.players = []; this.orbs = new Map(); this.orbId = 1; this.grid = new Map(); this.moving = new Set(); this.timed = new Set(); this.pellets = 0;
     this.clients = new Set(); this.events = []; this.orbAdds = []; this.orbRems = [];
     this.storm = { on: false, x: 0, y: 0, R: 360, t: 0, next: 2400 };
     for (let i = 0; i < PELLETS; i++) this.pellet(true);
@@ -150,9 +150,16 @@ class Arena {
   humans() { return this.players.filter(p => !p.bot); }
   // ---- orbs ----
   addOrb(x, y, v, col, vx = 0, vy = 0, life = 0, silent) {
-    const o = { id: this.orbId++, x, y, v, col, vx, vy, life, r: 3 + Math.sqrt(v) * 1.6 };
-    this.orbs.set(o.id, o); if (!silent) this.orbAdds.push(o); return o;
+    const o = { id: this.orbId++, x, y, v, col, vx, vy, life, r: 3 + Math.sqrt(v) * 1.6, cell: -1 };
+    this.orbs.set(o.id, o); if (!silent) this.orbAdds.push(o);
+    if (vx || vy) this.moving.add(o); else this.gridAdd(o);
+    if (life) this.timed.add(o); if (v === 1 && !life) this.pellets++;
+    return o;
   }
+  // griglia spaziale persistente delle particelle (aggiornata solo quando cambiano)
+  gridAdd(o) { const k = ((o.x / 160) | 0) * 64 + ((o.y / 160) | 0); o.cell = k; let c = this.grid.get(k); if (!c) this.grid.set(k, c = []); c.push(o); }
+  gridDel(o) { if (o.cell < 0) return; const c = this.grid.get(o.cell); if (c) { const i = c.indexOf(o); if (i >= 0) { c[i] = c[c.length - 1]; c.pop(); } } o.cell = -1; }
+  removeOrb(o, by) { if (o.dead) return; o.dead = true; this.orbs.delete(o.id); this.gridDel(o); this.moving.delete(o); this.timed.delete(o); if (o.v === 1 && !o.life) this.pellets--; this.orbRems.push([o.id, by]); }
   pellet(silent) { this.addOrb(rnd(20, WORLD - 20), rnd(20, WORLD - 20), 1, (Math.random() * 7) | 0, 0, 0, 0, silent); }
   dropMass(x, y, amount, col) { let left = amount; const piece = Math.max(4, amount / 22); while (left > .5) { const v = Math.min(left, piece * rnd(.7, 1.3)); left -= v; const a = rnd(0, TAU), s = rnd(1.5, 6); this.addOrb(x + rnd(-6, 6), y + rnd(-6, 6), v, col, Math.cos(a) * s, Math.sin(a) * s, 1800); } }
   // ---- giocatori ----
@@ -243,6 +250,11 @@ class Arena {
     }
     for (let i = 0; i < alive.length; i++) for (let j = i + 1; j < alive.length; j++) { const p = alive[i], q = alive[j]; if (!p.alive || !q.alive) continue; const dx = q.x - p.x, dy = q.y - p.y, rr = radius(p.m) + radius(q.m), d2 = dx * dx + dy * dy; if (d2 < rr * rr && d2 > 0) { const d = Math.sqrt(d2), o = (rr - d) / 2, nx = dx / d, ny = dy / d; p.x -= nx * o; p.y -= ny * o; q.x += nx * o; q.y += ny * o; } }
   }
+  orbsNear(x, y, R, fn) { const g = this.grid; if (!g) return; const C = 160, x0 = Math.max(0, ((x - R) / C) | 0), x1 = ((x + R) / C) | 0, y0 = Math.max(0, ((y - R) / C) | 0), y1 = ((y + R) / C) | 0;
+    for (let cx = x0; cx <= x1; cx++) for (let cy = y0; cy <= y1; cy++) { const c = g.get(cx * 64 + cy); if (c) for (const o of c) if (!o.dead) fn(o); }
+    for (const o of this.moving) if (Math.abs(o.x - x) < R && Math.abs(o.y - y) < R) fn(o); }
+  // il bottino (energia lasciata da un ucciso) e' sicuro se nessuno piu' grande puo' colpire il bot li'
+  lootSafe(b, x, y) { const r = radius(b.m); for (const o of this.players) { if (!o.alive || o === b || o.m < b.m * .9) continue; if (Math.hypot(o.x - x, o.y - y) < bladeLen(o) + radius(o.m) + r + 90) return false; } return true; }
   botThink(b) {
     const r = radius(b.m), Ln = bladeLen(b), dumb = b.iq < .35, tick = this.tick, players = this.players;
     if (--b.reactT <= 0) {
@@ -256,13 +268,19 @@ class Arena {
       if (!dumb) for (const o of players) { if (!o.alive || o === b) continue; const d = Math.hypot(o.x - b.x, o.y - b.y); if (d > bladeLen(o) + r + 30) continue;
         if (Math.abs(o.omega || 0) * bladeLen(o) > 7 && Math.random() < b.iq * .6) { b.block = o; break; } }
       b.aimNoise = rnd(-1, 1) * (1 - b.iq) * .5;
-      if (!pr && !th) { let best = null, bd = 1e12; for (const o of this.orbs.values()) { const dx = o.x - b.x, dy = o.y - b.y; if (dx > 520 || dx < -520 || dy > 520 || dy < -520) continue; const d = (dx * dx + dy * dy) / (o.v + 1); if (d < bd) { bd = d; best = o; } }
+      // bottino: energia dei nemici uccisi nelle vicinanze, se andarci e' sicuro
+      b.loot = null;
+      if (!th) { let bx = 0, by = 0, bv = 0, best = -1; this.orbsNear(b.x, b.y, 950, o => { if (!o.life || o.v < 2) return; const d = Math.hypot(o.x - b.x, o.y - b.y); if (d > 950) return; const sc = o.v / (d + 150); if (sc > best) { best = sc; bx = o.x; by = o.y; } bv += o.v; });
+        if (bv >= 8 && best > 0 && this.lootSafe(b, bx, by)) b.loot = { x: bx, y: by }; }
+      if (!pr && !th) { let best = null, bd = 1e12; this.orbsNear(b.x, b.y, 520, o => { const dx = o.x - b.x, dy = o.y - b.y; if (dx > 520 || dx < -520 || dy > 520 || dy < -520) return; const d = (dx * dx + dy * dy) / (o.v + 1); if (d < bd) { bd = d; best = o; } });
         const st = this.storm;
         if (st.on && Math.hypot(st.x - b.x, st.y - b.y) < 1600 && Math.random() < .6) { b.wx = st.x + rnd(-150, 150); b.wy = st.y + rnd(-150, 150); } else if (best) { b.wx = best.x; b.wy = best.y; } else if (!b.wx || Math.hypot(b.wx - b.x, b.wy - b.y) < 80) { b.wx = rnd(300, WORLD - 300); b.wy = rnd(300, WORLD - 300); } }
     }
     let mx = 0, my = 0; const th = b.th, pr = b.target;
     if (th && th.alive) { const dx = b.x - th.x, dy = b.y - th.y, d = Math.hypot(dx, dy) || 1; mx = dx / d; my = dy / d; b.aimT = Math.atan2(-dy, -dx);
       if (d < bladeLen(th) + radius(th.m) + r + 20 && b.iq > .5 && Math.random() < .02) this.dash(b); }
+    else if (b.loot && (!pr || !pr.alive || Math.hypot(pr.x - b.x, pr.y - b.y) > Math.hypot(b.loot.x - b.x, b.loot.y - b.y) * .6)) {
+      mx = b.loot.x - b.x; my = b.loot.y - b.y; const l = Math.hypot(mx, my); if (l < 25) b.loot = null; else { mx /= l; my /= l; b.aimT = Math.atan2(my, mx) + b.aimNoise * .5; } }
     else if (pr && pr.alive) {
       const dx = pr.x - b.x, dy = pr.y - b.y, d = Math.hypot(dx, dy) || 1, ang = Math.atan2(dy, dx), rq = radius(pr.m);
       const guardD = Ln + r + rq + 22 + (1 - b.iq) * 20;
@@ -309,16 +327,20 @@ class Arena {
     if (!st.on && --st.next <= 0) { st.on = true; st.t = 900; st.x = rnd(500, WORLD - 500); st.y = rnd(500, WORLD - 500); this.events.push(['st', st.x | 0, st.y | 0]); }
     if (st.on) { if (--st.t <= 0) { st.on = false; st.next = (5400 + rnd(0, 1800)) | 0; this.events.push(['st0']); } else if (this.tick % 3 === 0) { const a = rnd(0, TAU), d = Math.sqrt(Math.random()) * st.R; this.addOrb(st.x + Math.cos(a) * d, st.y + Math.sin(a) * d, 3, 4, 0, 0, 1200); } }
     { let k = null; for (const p of this.players) if (p.alive && (!k || p.m > k.m)) k = p; this.king = k; }
-    let pc = 0;
-    for (const o of this.orbs.values()) {
-      if (o.vx || o.vy) { o.x += o.vx; o.y += o.vy; o.vx *= .9; o.vy *= .9; if (Math.abs(o.vx) < .05 && Math.abs(o.vy) < .05) o.vx = o.vy = 0; }
-      if (o.life && --o.life <= 0) { this.orbs.delete(o.id); this.orbRems.push([o.id, 0]); continue; }
-      let eaten = false;
-      for (const p of this.players) { if (!p.alive) continue; const r = radius(p.m) + o.r + 8, dx = p.x - o.x, dy = p.y - o.y; if (dx > r + 40 || dx < -r - 40 || dy > r + 40 || dy < -r - 40) continue; const d2 = dx * dx + dy * dy;
-        if (d2 < r * r) { p.m += o.v * (1 + (PCT[p.skin] || 0) / 100); this.orbs.delete(o.id); this.orbRems.push([o.id, p.id]); if (p.ws) { p.eat = (p.eat || 0) + o.v; } eaten = true; break; }
-        else if (d2 < (r + 40) * (r + 40)) { const d = Math.sqrt(d2); o.x += dx / d * 2.5; o.y += dy / d * 2.5; } }
-      if (!eaten && o.v === 1 && !o.life) pc++;
+    // energia: griglia spaziale persistente, ogni giocatore controlla solo le particelle vicine
+    for (const o of this.moving) { o.x = clamp(o.x + o.vx, 4, WORLD - 4); o.y = clamp(o.y + o.vy, 4, WORLD - 4); o.vx *= .9; o.vy *= .9; if (Math.abs(o.vx) < .05 && Math.abs(o.vy) < .05) { o.vx = o.vy = 0; this.moving.delete(o); this.gridAdd(o); } }
+    for (const o of this.timed) if (--o.life <= 0) { o.life = 1; this.removeOrb(o, 0); }
+    const grid = this.grid;
+    const eatCheck = (p, pr, o) => { const r = pr + o.r + 8, dx = p.x - o.x, dy = p.y - o.y; if (dx > r + 40 || dx < -r - 40 || dy > r + 40 || dy < -r - 40) return; const d2 = dx * dx + dy * dy;
+      if (d2 < r * r) { p.m += o.v * (1 + (PCT[p.skin] || 0) / 100); if (p.ws) p.eat = (p.eat || 0) + o.v; this.removeOrb(o, p.id); }
+      else if (d2 < (r + 40) * (r + 40)) { const d = Math.sqrt(d2); o.x += dx / d * 2.5; o.y += dy / d * 2.5; if (o.cell >= 0 && (((o.x / 160) | 0) * 64 + ((o.y / 160) | 0)) !== o.cell) { this.gridDel(o); this.gridAdd(o); } } };
+    for (const p of this.players) {
+      if (!p.alive) continue; const pr = radius(p.m), reach = pr + 60;
+      const x0 = Math.max(0, ((p.x - reach) / 160) | 0), x1 = ((p.x + reach) / 160) | 0, y0 = Math.max(0, ((p.y - reach) / 160) | 0), y1 = ((p.y + reach) / 160) | 0;
+      for (let cx = x0; cx <= x1; cx++) for (let cy = y0; cy <= y1; cy++) { const c = grid.get(cx * 64 + cy); if (!c) continue; for (let i = c.length - 1; i >= 0; i--) { const o = c[i]; if (o) eatCheck(p, pr, o); } }
+      for (const o of this.moving) if (!o.dead) eatCheck(p, pr, o);
     }
+    const pc = this.pellets;
     for (let k = pc; k < PELLETS && k < pc + 6; k++) this.pellet();
     if (this.tick % 2 === 0) this.broadcast();
   }
@@ -377,7 +399,7 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url === '/brand/icon.png' || url === '/favicon.ico') { res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' }); return res.end(ICON_PNG); }
-  if (url === '/health') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ ok: true, arenas: arenas.map(a => ({ id: a.id, humans: a.humans().length, bots: a.players.length - a.humans().length })) })); }
+  if (url === '/health') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ ok: true, tickMs: +PERF.tickMs.toFixed(3), cpuLoad: +(PERF.tickMs * 60 / 10).toFixed(1) + '%', arenas: arenas.map(a => ({ id: a.id, humans: a.humans().length, bots: a.players.length - a.humans().length })) })); }
   res.writeHead(404); res.end('Not found');
 });
 
@@ -451,13 +473,16 @@ wss.on('connection', (ws) => {
 setInterval(() => { for (const ws of wss.clients) { if (!ws.isAlive) { ws.terminate(); continue; } ws.isAlive = false; try { ws.ping(); } catch (e) {} } }, 15000);
 
 // ---------- loop a 60 Hz ----------
+const PERF = { tickMs: 0 };
 const STEP = 1000 / 60; let last = performance.now(), acc = 0;
 function loop() {
   const now = performance.now(); acc += now - last; last = now; if (acc > 250) acc = 250;
-  while (acc >= STEP) { for (const a of arenas) a.update(); acc -= STEP; }
+  const t0 = performance.now(); let n = 0;
+  while (acc >= STEP) { for (const a of arenas) a.update(); acc -= STEP; n++; }
+  if (n) PERF.tickMs = PERF.tickMs * .98 + ((performance.now() - t0) / n) * .02;
   // libera arene vuote oltre la prima
   for (let i = arenas.length - 1; i > 0; i--) if (!arenas[i].clients.size) arenas.splice(i, 1);
-  setTimeout(loop, 4);
+  setTimeout(loop, Math.max(1, Math.floor(STEP - acc)));
 }
 pickArena(); loop();
 console.log('Archivio account: ' + store.kind + ' · pagamenti: ' + (STRIPE_KEY ? (STRIPE_TEST ? 'TEST' : 'LIVE') : 'disattivati (manca STRIPE_SECRET_KEY)'));
