@@ -27,7 +27,7 @@ const SHOP = grab('SHOP'), MODELS = grab('MODELS'), NAMES = grab('NAMES'), PERS 
 const MODEL_BY_ID = Object.fromEntries(MODELS.map(m => [m.id, m]));
 const SHOP_IDS = new Set(SHOP.map(s => s.id));
 const rarityOf = it => it.price >= 5.5 ? 'M' : it.price >= 3.4 ? 'L' : it.price >= 2.4 ? 'E' : it.price > 0 ? 'R' : '';
-const PERK_TIER = { skin: { R: 3, E: 5, L: 6, M: 8 }, hilt: { R: 3, E: 5, L: 6, M: 8 }, trail: { R: 2, E: 3, L: 4, M: 5 }, kill: { R: 5, E: 8, L: 10, M: 12 } };
+const PERK_TIER = { blade: { R: 2, E: 3, L: 4, M: 5 }, skin: { R: 3, E: 5, L: 6, M: 8 }, hilt: { R: 3, E: 5, L: 6, M: 8 }, trail: { R: 2, E: 3, L: 4, M: 5 }, kill: { R: 5, E: 8, L: 10, M: 12 } };
 const PCT = {}; for (const it of SHOP) { const r = rarityOf(it); PCT[it.id] = r ? PERK_TIER[it.cat][r] : 0; }
 
 // ---------- costanti di gioco (identiche al client) ----------
@@ -36,7 +36,8 @@ const rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => v < a ? 
 const angDiff = (a, b) => { let d = (a - b) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; };
 const radius = m => 12 + Math.sqrt(m) * 2.4;
 const bladeLen = p => (radius(p.m) * 1.5 + 40) * p.model.len * (1 + (PCT[p.hiltS] || 0) / 100) * (p.rageT > 0 ? 1.2 : 1);
-const bladeW = p => (4 + radius(p.m) * .08) * p.model.w;
+const bladeW = p => (4 + radius(p.m) * .08) * p.model.w * (1 + (PCT[p.bladeS] || 0) / 100);
+const BASE_COLS = ['#3dff6e', '#28c8ff', '#ff2a3d'];
 const r1 = v => Math.round(v * 10) / 10, r3 = v => Math.round(v * 1000) / 1000;
 
 function segPointD2(ax, ay, bx, by, px, py) { const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy; let t = l2 ? ((px - ax) * dx + (py - ay) * dy) / l2 : 0; t = clamp(t, 0, 1); const qx = ax + dx * t - px, qy = ay + dy * t - py; return [qx * qx + qy * qy, ax + dx * t, ay + dy * t]; }
@@ -90,7 +91,7 @@ setInterval(() => store.flush(), 4000);
 
 const newToken = () => 'PLA-' + crypto.randomBytes(15).toString('base64').replace(/[^A-Za-z0-9]/g, '').slice(0, 20).toUpperCase();
 const idOf = token => crypto.createHash('sha256').update(String(token)).digest('hex').slice(0, 32);
-function blankAccount(id) { return { id, created: Date.now(), usd: 0, owned: [], eq: { skin: 's_default', hilt: 'h_default', trail: 't_default', kill: 'k_default' }, stats: { kills: 0, best: 0, xp: 0 }, daily: '', quests: freshQuests(), owner: false, paid: [], pending: [] }; }
+function blankAccount(id) { return { id, created: Date.now(), usd: 0, owned: [], eq: { skin: 's_default', hilt: 'h_default', trail: 't_default', kill: 'k_default', blade: 'c_default' }, stats: { kills: 0, best: 0, xp: 0 }, daily: '', quests: freshQuests(), owner: false, paid: [], pending: [] }; }
 const ownsItem = (a, id) => { const it = SHOP_BY_ID[id]; return !!it && (a.owner || it.price === 0 || a.owned.includes(id)); };
 function publicAcct(a) { if (a.quests.day !== dayKey()) a.quests = freshQuests(); return { usd: a.owner ? 0 : a.usd, owned: a.owned, eq: a.eq, stats: a.stats, quests: a.quests, owner: a.owner }; }
 function pushAcct(ws) { if (ws && ws.acct) send(ws, { t: 'acct', d: publicAcct(ws.acct) }); }
@@ -166,16 +167,16 @@ class Arena {
   // ---- giocatori ----
   newPlayer(name, bot) {
     return { id: NEXT_ID++, name, bot, x: 0, y: 0, vx: 0, vy: 0, m: 20, a: 0, aPrev: 0, aim: 0, aimT: 0, av: 0, omega: 0, model: MODELS[0], col: COLORS[0], alive: false, kills: 0, best: 20, born: 0, dashT: 0, dashCd: 0, stun: 0, hitCd: new Map(), mx: 0, my: 0, respawn: 0, counter: 0, steady: 0,
-      react: 10, iq: .5, hand: .12, pat: 80, reactT: 0, mode: 'guard', modeT: 0, circ: 1, target: null, th: null, block: null, wx: 0, wy: 0, aimNoise: 0, skin: 's_default', hiltS: 'h_default', trailS: 't_default', kfx: 'k_default', lv: 1 };
+      react: 10, iq: .5, hand: .12, pat: 80, reactT: 0, mode: 'guard', modeT: 0, circ: 1, target: null, th: null, block: null, wx: 0, wy: 0, aimNoise: 0, skin: 's_default', hiltS: 'h_default', trailS: 't_default', kfx: 'k_default', bladeS: 'c_default', lv: 1 };
   }
-  botCosmetics(b) { const pick = (cat, pr) => { if (Math.random() > pr) return SHOP.find(s => s.cat === cat && s.price === 0).id; const L2 = SHOP.filter(s => s.cat === cat && s.price > 0); return L2[(Math.random() * L2.length) | 0].id; }; b.skin = pick('skin', .3); b.hiltS = pick('hilt', .25); b.trailS = pick('trail', .2); b.kfx = pick('kill', .2); }
+  botCosmetics(b) { const pick = (cat, pr) => { if (Math.random() > pr) return SHOP.find(s => s.cat === cat && s.price === 0).id; const L2 = SHOP.filter(s => s.cat === cat && s.price > 0); return L2[(Math.random() * L2.length) | 0].id; }; b.skin = pick('skin', .3); b.hiltS = pick('hilt', .25); b.trailS = pick('trail', .2); b.kfx = pick('kill', .2); b.bladeS = pick('blade', .22); }
   setPersonality(b) { let r = Math.random(), P = PERS[0]; for (const q of PERS) { if (r < q.p) { P = q; break; } r -= q.p; } b.react = rnd(...P.react) | 0; b.iq = rnd(...P.iq); b.hand = rnd(...P.hand); b.pat = rnd(...P.pat) | 0; b.circ = Math.random() < .5 ? 1 : -1;
     b.react0 = b.react;
     // carattere: coraggio (sfida chi e' piu' grande), pentimento (a meta' attacco ci ripensa), arroganza (ignora i piccolissimi)
     const c = Math.random(); b.courage = c < .3 ? rnd(.7, 1) : c < .8 ? rnd(.35, .7) : rnd(0, .35);
     b.regret = Math.random() < .4 ? rnd(.3, .8) : rnd(0, .2); b.arrog = rnd(0, 1); b.scared = 0; b.scaredOf = null; }
   botModel() { const w = [40, 15, 12, 14, 8, 7, 4]; let r = Math.random() * 100; for (let i = 0; i < w.length; i++) { if (r < w[i]) return MODELS[i]; r -= w[i]; } return MODELS[0]; }
-  rollBot(b) { b.name = NAMES[(Math.random() * NAMES.length) | 0]; b.col = COLORS[(Math.random() * 7) | 0]; b.model = this.botModel(); this.setPersonality(b); this.botCosmetics(b); b.lv = 1 + ((Math.random() ** 1.6) * 40 | 0); }
+  rollBot(b) { b.name = NAMES[(Math.random() * NAMES.length) | 0]; b.col = BASE_COLS[(Math.random() * 3) | 0]; b.model = this.botModel(); this.setPersonality(b); this.botCosmetics(b); b.lv = 1 + ((Math.random() ** 1.6) * 40 | 0); }
   spawn(p, m = 20) {
     let best = [WORLD / 2, WORLD / 2], bs = -1e9;
     for (let t = 0; t < 40; t++) { const x = rnd(220, WORLD - 220), y = rnd(220, WORLD - 220); let md = 1e9;
@@ -185,7 +186,7 @@ class Arena {
     p.aPrev = p.a; p.aim = p.a; p.aimT = p.a; p.hitCd.clear(); p.ph = []; p.viewR = NaN; p.slowT = 0; p.rageT = 0; p.hideT = 0; p.abCd = 0;
     this.events.push(['sp', this.info(p)]);
   }
-  info(p) { return { id: p.id, n: p.name, b: p.bot ? 1 : 0, c: p.col, md: p.model.id, s: p.skin, h: p.hiltS, t: p.trailS, k: p.kfx, lv: p.lv, x: r1(p.x), y: r1(p.y), a: r3(p.a), m: r1(p.m), born: p.born }; }
+  info(p) { return { id: p.id, n: p.name, b: p.bot ? 1 : 0, c: p.col, md: p.model.id, s: p.skin, h: p.hiltS, t: p.trailS, k: p.kfx, bs: p.bladeS || 'c_default', lv: p.lv, x: r1(p.x), y: r1(p.y), a: r3(p.a), m: r1(p.m), born: p.born }; }
   balanceBots(initial) {
     const hum = this.humans().length, want = Math.max(MIN_BOTS, MIN_ENTITIES - hum);
     let bots = this.players.filter(p => p.bot);
@@ -454,12 +455,12 @@ wss.on('connection', (ws) => {
       if (!p) { p = arena.newPlayer('', false); p.ws = ws; ws.player = p; arena.players.push(p); }
       if (p.alive) return;
       p.name = String(m.name || 'Player').replace(/[<>&"]/g, '').slice(0, 14) || 'Player';
-      p.col = COLORS.includes(m.col) ? m.col : COLORS[(Math.random() * 7) | 0];
+      p.col = BASE_COLS.includes(m.col) ? m.col : BASE_COLS[(Math.random() * 3) | 0];
       const A = ws.acct; if (!A) return;
       const md = MODEL_BY_ID[m.model] || MODELS[0]; p.model = isUnlocked(md, A.stats) ? md : MODELS[0];
       const ok = (id, cat) => SHOP_BY_ID[id] && SHOP_BY_ID[id].cat === cat && ownsItem(A, id);
       p.skin = ok(A.eq.skin, 'skin') ? A.eq.skin : 's_default'; p.hiltS = ok(A.eq.hilt, 'hilt') ? A.eq.hilt : 'h_default';
-      p.trailS = ok(A.eq.trail, 'trail') ? A.eq.trail : 't_default'; p.kfx = ok(A.eq.kill, 'kill') ? A.eq.kill : 'k_default';
+      p.trailS = ok(A.eq.trail, 'trail') ? A.eq.trail : 't_default'; p.kfx = ok(A.eq.kill, 'kill') ? A.eq.kill : 'k_default'; p.bladeS = ok(A.eq.blade, 'blade') ? A.eq.blade : 'c_default';
       p.lv = levelOf(A.stats.xp); p.ba = NaN; p.earn = null;
       p.mx = p.my = 0; arena.spawn(p); arena.balanceBots();
       send(ws, { t: 'you', id: p.id });
