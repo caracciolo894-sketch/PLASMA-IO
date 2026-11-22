@@ -170,7 +170,7 @@ class Arena {
       for (const o of this.players) { if (!o.alive || o === p) continue; let d = Math.hypot(o.x - x, o.y - y) - bladeLen(o) - radius(o.m); if (!o.bot) d -= 600; if (d < md) md = d; }
       if (md > bs) { bs = md; best = [x, y]; } if (bs > 700) break; }
     Object.assign(p, { x: best[0], y: best[1], vx: 0, vy: 0, m, alive: true, kills: 0, best: m, born: this.tick, dashT: 0, dashCd: 0, stun: 0, streak: 0, a: rnd(0, TAU), av: 0, counter: 0, mode: 'guard', modeT: 0, target: null, th: null, block: null, steady: 0 });
-    p.aPrev = p.a; p.aim = p.a; p.aimT = p.a; p.hitCd.clear();
+    p.aPrev = p.a; p.aim = p.a; p.aimT = p.a; p.hitCd.clear(); p.ph = []; p.viewR = NaN;
     this.events.push(['sp', this.info(p)]);
   }
   info(p) { return { id: p.id, n: p.name, b: p.bot ? 1 : 0, c: p.col, md: p.model.id, s: p.skin, h: p.hiltS, t: p.trailS, k: p.kfx, lv: p.lv, x: r1(p.x), y: r1(p.y), a: r3(p.a), m: r1(p.m), born: p.born }; }
@@ -212,6 +212,8 @@ class Arena {
   }
   clash(p, q, x, y) {
     if ((p.hitCd.get('c' + q.id) || 0) > this.tick) return; p.hitCd.set('c' + q.id, this.tick + 16); q.hitCd.set('c' + p.id, this.tick + 16);
+    // lama molto piu' grande: travolge quella piccola, niente rimbalzo ne' blocco per il grande
+    if (p.m >= q.m * 3 || q.m >= p.m * 3) { const big = p.m > q.m ? p : q, sm = big === p ? q : p; sm.a = sm.aPrev - sm.omega * 1.2; sm.av = -sm.av * .8; sm.stun = 14; const dx = sm.x - big.x, dy = sm.y - big.y, d = Math.hypot(dx, dy) || 1; sm.vx += dx / d * 4; sm.vy += dy / d * 4; this.events.push(['c', p.id, q.id, r1(x), r1(y), 0, 0]); return; }
     const vp = Math.abs(p.omega) * bladeLen(p), vq = Math.abs(q.omega) * bladeLen(q);
     p.a = p.aPrev - p.omega * .8; q.a = q.aPrev - q.omega * .8; p.av = -p.av * .6; q.av = -q.av * .6;
     const def = vp <= vq ? p : q, att = def === p ? q : p, vd = Math.min(vp, vq), va = Math.max(vp, vq);
@@ -224,11 +226,19 @@ class Arena {
     const alive = this.players.filter(p => p.alive), segs = new Map(); for (const p of alive) segs.set(p, segsOf(this.bladesAt(p, p.x, p.y, p.a)));
     for (let i = 0; i < alive.length; i++) { const p = alive[i];
       for (let j = 0; j < alive.length; j++) { if (i === j) continue; const q = alive[j]; if (!p.alive) break;
-        if (!q.alive || Math.abs(p.x - q.x) > 700 || Math.abs(p.y - q.y) > 700) continue;
+        const reach = bladeLen(p) + radius(p.m) * 1.1 + radius(q.m) + 80;
+        if (!q.alive || Math.abs(p.x - q.x) > reach || Math.abs(p.y - q.y) > reach) continue;
         if (i < j) { const w = (bladeW(p) + bladeW(q)) * .5 + 3; outer: for (const a of segs.get(p)) for (const b of segs.get(q)) { const [d2, x, y] = segSegD2(a, b); if (d2 < w * w) { this.clash(p, q, x, y); break outer; } } }
         if (p.stun > 0 || this.tick - q.born < 120) continue;
-        const rq = radius(q.m) + bladeW(p) * .75 + 2;
-        for (const a of segs.get(p)) { const [d2] = segPointD2(a[0], a[1], a[2], a[3], q.x, q.y); if (d2 < rq * rq) { this.kill(q, p); break; } }
+        const human = !p.bot, rq = radius(q.m) + bladeW(p) * .75 + (human ? 6 : 2);
+        // compensazione del ritardo: per i giocatori umani controlla il nemico dove lo vedevano sul loro schermo
+        let qx = q.x, qy = q.y;
+        if (human && Number.isFinite(p.viewR) && q.ph) { const back = clamp(this.tick - p.viewR, 0, 14); if (back > 0) { const want = this.tick - back; for (let k = q.ph.length - 1; k >= 0; k--) if (q.ph[k][0] <= want) { qx = q.ph[k][1]; qy = q.ph[k][2]; break; } } }
+        const hitAt = (sg, x, y) => { for (const a of sg) { const [d2] = segPointD2(a[0], a[1], a[2], a[3], x, y); if (d2 < rq * rq) return true; } return false; };
+        let hit = hitAt(segs.get(p), q.x, q.y) || (qx !== q.x && hitAt(segs.get(p), qx, qy));
+        // lama veloce: controlla anche le posizioni intermedie del colpo (niente "salti" sopra i nemici piccoli)
+        if (!hit && Math.abs(p.omega) > .02) { const steps = Math.min(8, Math.ceil(Math.abs(p.omega) * (bladeLen(p) + radius(p.m)) / Math.max(8, rq))); for (let k = 1; k < steps && !hit; k++) { const sg = segsOf(this.bladesAt(p, p.x, p.y, p.a - p.omega * k / steps)); hit = hitAt(sg, q.x, q.y) || (qx !== q.x && hitAt(sg, qx, qy)); } }
+        if (hit) this.kill(q, p);
       }
     }
     for (let i = 0; i < alive.length; i++) for (let j = i + 1; j < alive.length; j++) { const p = alive[i], q = alive[j]; if (!p.alive || !q.alive) continue; const dx = q.x - p.x, dy = q.y - p.y, rr = radius(p.m) + radius(q.m), d2 = dx * dx + dy * dy; if (d2 < rr * rr && d2 > 0) { const d = Math.sqrt(d2), o = (rr - d) / 2, nx = dx / d, ny = dy / d; p.x -= nx * o; p.y -= ny * o; q.x += nx * o; q.y += ny * o; } }
@@ -292,6 +302,7 @@ class Arena {
       if (p.dashT > 0) p.dashT--; if (p.dashCd > 0) p.dashCd--; if (p.stun > 0) p.stun--;
       if (p.m > 300) p.m -= (p.m - 300) * .00004;
       if (p.m > p.best) p.best = p.m;
+      (p.ph || (p.ph = [])).push([this.tick, p.x, p.y]); if (p.ph.length > 20) p.ph.shift();
     }
     this.combat();
     const st = this.storm;
@@ -413,6 +424,7 @@ wss.on('connection', (ws) => {
       const mx = +m.mx || 0, my = +m.my || 0; p.mx = clamp(mx, -1, 1); p.my = clamp(my, -1, 1);
       if (Number.isFinite(+m.a)) p.aim = +m.a;
       if (Number.isFinite(+m.b)) p.ba = p.a + angDiff(+m.b, p.a);
+      if (Number.isFinite(+m.r)) p.viewR = Math.min(+m.r, arena.tick);
       if (m.d) p.wantDash = true;
     } else if (m.t === 'ping') send(ws, { t: 'pong', c: m.c });
     else if (m.t === 'auth') handleAuth(ws, m.token);

@@ -499,6 +499,8 @@ function killFx(k,p,att,r){
 }
 function clash(p,q,x,y){
   if((p.hitCd.get('c'+q.id)||0)>tick)return;p.hitCd.set('c'+q.id,tick+16);q.hitCd.set('c'+p.id,tick+16);
+  // lama molto piu' grande: travolge quella piccola invece di rimbalzare
+  if(p.m>=q.m*3||q.m>=p.m*3){const big=p.m>q.m?p:q,sm=big===p?q:p;sm.a=sm.aPrev-sm.omega*1.2;sm.av=-sm.av*.8;sm.stun=14;const dx=sm.x-big.x,dy=sm.y-big.y,d=Math.hypot(dx,dy)||1;sm.vx+=dx/d*4;sm.vy+=dy/d*4;sparks(x,y,big.col,8,7);if(onScreen(x,y))sfx('clash');return;}
   const vp=Math.abs(p.omega)*bladeLen(p),vq=Math.abs(q.omega)*bladeLen(q);
   p.a=p.aPrev-p.omega*.8;q.a=q.aPrev-q.omega*.8;p.av=-p.av*.6;q.av=-q.av*.6;
   // perfetta solo se chi difende teneva la lama ferma (guardia) da almeno 8 frame e l'altro arrivava con un fendente veloce
@@ -617,7 +619,7 @@ function netEvent(e){const k=e[0];
   else if(k==='c'){const p=net.byId.get(e[1]),q=net.byId.get(e[2]);if(!p||!q)return;const x=e[3],y=e[4];
     sparks(x,y,'#ffffff',10,8,18);sparks(x,y,p.col,5,6);sparks(x,y,q.col,5,6);if(onScreen(x,y))sfx('clash');if(p===me||q===me)shake=Math.max(shake,4);
     if(e[5]){const def=net.byId.get(e[5]),att=net.byId.get(e[6]);if(def===me){questProg('parry',1);banner(T('perfect'),T('counter'),me.col);}if(att===me)floatTxt(me.x,me.y-40,T('stagger'),'#ff2a3d',16);}
-    if(p===me||q===me){me.a=me.aPrev-(me.omega||0)*.8;me.av=-(me.av||0)*.6;}}
+    if(p===me||q===me){const o=p===me?q:p;if(!(me.m>=o.m*3)){me.a=me.aPrev-(me.omega||0)*(o.m>=me.m*3?1.2:.8);me.av=-(me.av||0)*.6;}}}
   else if(k==='ds'){const p=net.byId.get(e[1]);if(p&&p!==me&&onScreen(p.x,p.y))tone(200,600,.12,'sine',.025);}
   else if(k==='st'){storm.on=true;storm.x=e[1];storm.y=e[2];storm.t=900;if(state==='play'){banner('⚡ '+T('storm'),T('stormSub'),'#ffd23d');tone(220,880,.6,'sawtooth',.05);}}
   else if(k==='st0'){storm.on=false;}}
@@ -696,7 +698,7 @@ function netStep(){
     if(isMe){humanInput(p);turnBlade(p);}else{p.a=v[2];p.omega=angDiff(p.a,p.pa);}
     if(p.m>p.best)p.best=p.m;}
   // invio input ~30 volte al secondo
-  if(state==='play'&&me&&me.alive&&(tick-net.lastSend>=1||net.dash)){net.lastSend=tick;net.send({t:'in',mx:+(me.mx||0).toFixed(2),my:+(me.my||0).toFixed(2),a:+me.aim.toFixed(3),b:+me.a.toFixed(3),d:net.dash?1:0});net.dash=false;}
+  if(state==='play'&&me&&me.alive&&(tick-net.lastSend>=1||net.dash)){net.lastSend=tick;net.send({t:'in',mx:+(me.mx||0).toFixed(2),my:+(me.my||0).toFixed(2),a:+me.aim.toFixed(3),b:+me.a.toFixed(3),r:Math.round(R),d:net.dash?1:0});net.dash=false;}
   if(++net.count%120===0){net.send({t:'ping',c:performance.now()});netStatus();}
 }
 if(ONLINE)netConnect();
