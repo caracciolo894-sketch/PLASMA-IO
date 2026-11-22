@@ -91,6 +91,7 @@ button.play{margin-top:16px;width:100%;max-width:420px;padding:14px;font-family:
 #perks{margin:8px auto 0;font-size:12px;font-weight:700;color:#5dffa0;min-height:16px;letter-spacing:.03em}#perks small{color:#8792ab;font-weight:800;margin-right:6px;font-size:10px;letter-spacing:.12em}
 .item .perk{font-size:12px;font-weight:800;color:#5dffa0;letter-spacing:.04em;margin-top:-4px;text-shadow:0 0 8px #5dffa066}
 #netSt{font-size:12px;color:#8792ab;margin:2px 0 8px;min-height:15px;font-weight:600;letter-spacing:.03em}#netSt i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;box-shadow:0 0 8px currentColor;vertical-align:1px}
+#acctBox{font-size:11px;color:#8792ab;margin:6px auto 0;max-width:560px;line-height:1.5}#acctBox code{color:#dfe6f5;background:#141821;padding:2px 6px;border-radius:5px;font-size:12px;user-select:all}#acctBox button{font-size:11px;padding:3px 9px;margin-left:6px;border-radius:6px;border:0;background:#2a2e36;color:#fff;cursor:pointer}
 .item .desc{font-size:11px;color:#8792ab;min-height:15px;margin-top:-4px}
 .item .row2{display:flex;gap:6px}
 .item button{flex:1;border:0;border-radius:8px;padding:7px 4px;font-family:Rajdhani;font-weight:700;font-size:14px;letter-spacing:1px;cursor:pointer}
@@ -187,7 +188,7 @@ button.shopBtn{margin-top:10px;width:100%;max-width:420px;padding:10px;font-fami
   <div class="tabs" id="tabs"><button data-c="usd" data-t="tDollars"></button><button data-c="skin" data-t="tSkin"></button><button data-c="hilt" data-t="tHilt"></button><button data-c="trail" data-t="tTrail"></button><button data-c="kill" data-t="tKill"></button></div>
   <div id="shopGrid"></div>
   <div class="cos" data-t="cosmetic"></div><div id="payNote" class="hidden" data-t="pay"></div>
-  <div class="coderow"><input id="codeIn" autocomplete="off"><button id="codeBtn" data-t="redeem"></button></div>
+  <div class="coderow"><input id="codeIn" autocomplete="off"><button id="codeBtn" data-t="redeem"></button></div><div id="acctBox"></div>
   <button class="play" id="closeShop" data-t="close" style="max-width:260px;font-size:18px;padding:10px"></button>
 </div></div>
 <div id="quests" class="overlay hidden"><div class="panel" style="max-width:520px">
@@ -253,6 +254,7 @@ for(const [k,v] of Object.entries({"it": {"vend": "VENDETTA!", "vendSub": "Hai e
 for(const [k,v] of Object.entries({"it": {"tDollars": "DOLLARI", "buyD": "Compra dollari", "bonusP": "+{n}% BONUS", "popular": "PIÙ VENDUTO", "bestV": "MIGLIOR AFFARE", "notEnough": "Dollari insufficienti", "bought": "Acquistato!", "confirm": "CONFERMA", "quests": "MISSIONI GIORNALIERE", "questsB": "MISSIONI", "claim": "RISCATTA", "claimed": "RISCATTATA", "resetIn": "Nuove missioni tra {h} h {m} min", "daily": "Bonus giornaliero", "earned": "GUADAGNATI", "eKills": "Uccisioni", "eMass": "Massa", "eTime": "Sopravvivenza", "eQuest": "Missioni", "qDone": "MISSIONE COMPLETATA", "q_kill": "Elimina {n} nemici", "q_mass": "Raggiungi {n} di massa", "q_parry": "Fai {n} parate perfette", "q_time": "Sopravvivi {n} minuti in una partita", "q_energy": "Raccogli {n} di energia", "packOk": "+{n} dollari aggiunti!", "usedCode": "Codice già usato su questo dispositivo", "session": "partita"}, "en": {"tDollars": "DOLLARS", "buyD": "Buy dollars", "bonusP": "+{n}% BONUS", "popular": "MOST POPULAR", "bestV": "BEST VALUE", "notEnough": "Not enough dollars", "bought": "Purchased!", "confirm": "CONFIRM", "quests": "DAILY QUESTS", "questsB": "QUESTS", "claim": "CLAIM", "claimed": "CLAIMED", "resetIn": "New quests in {h} h {m} min", "daily": "Daily bonus", "earned": "EARNED", "eKills": "Kills", "eMass": "Mass", "eTime": "Survival", "eQuest": "Quests", "qDone": "QUEST COMPLETE", "q_kill": "Eliminate {n} enemies", "q_mass": "Reach {n} mass", "q_parry": "Land {n} perfect parries", "q_time": "Survive {n} minutes in one match", "q_energy": "Collect {n} energy", "packOk": "+{n} dollars added!", "usedCode": "Code already used on this device", "session": "match"}, "es": {"tDollars": "DÓLARES", "buyD": "Comprar dólares", "bonusP": "+{n}% EXTRA", "popular": "MÁS VENDIDO", "bestV": "MEJOR OFERTA", "notEnough": "Dólares insuficientes", "bought": "¡Comprado!", "confirm": "CONFIRMAR", "quests": "MISIONES DIARIAS", "questsB": "MISIONES", "claim": "COBRAR", "claimed": "COBRADA", "resetIn": "Nuevas misiones en {h} h {m} min", "daily": "Bono diario", "earned": "GANADOS", "eKills": "Bajas", "eMass": "Masa", "eTime": "Supervivencia", "eQuest": "Misiones", "qDone": "MISIÓN COMPLETADA", "q_kill": "Elimina a {n} enemigos", "q_mass": "Alcanza {n} de masa", "q_parry": "Haz {n} bloqueos perfectos", "q_time": "Sobrevive {n} minutos en una partida", "q_energy": "Recoge {n} de energía", "packOk": "¡+{n} dólares añadidos!", "usedCode": "Código ya usado en este dispositivo", "session": "partida"}, "fr": {"tDollars": "DOLLARS", "buyD": "Acheter des dollars", "bonusP": "+{n} % BONUS", "popular": "LE PLUS VENDU", "bestV": "MEILLEURE OFFRE", "notEnough": "Dollars insuffisants", "bought": "Acheté !", "confirm": "CONFIRMER", "quests": "QUÊTES DU JOUR", "questsB": "QUÊTES", "claim": "RÉCUPÉRER", "claimed": "RÉCUPÉRÉE", "resetIn": "Nouvelles quêtes dans {h} h {m} min", "daily": "Bonus quotidien", "earned": "GAGNÉS", "eKills": "Éliminations", "eMass": "Masse", "eTime": "Survie", "eQuest": "Quêtes", "qDone": "QUÊTE TERMINÉE", "q_kill": "Élimine {n} ennemis", "q_mass": "Atteins {n} de masse", "q_parry": "Réussis {n} parades parfaites", "q_time": "Survis {n} minutes en une partie", "q_energy": "Récolte {n} d'énergie", "packOk": "+{n} dollars ajoutés !", "usedCode": "Code déjà utilisé sur cet appareil", "session": "partie"}, "de": {"tDollars": "DOLLAR", "buyD": "Dollar kaufen", "bonusP": "+{n} % BONUS", "popular": "BELIEBTESTE", "bestV": "BESTER PREIS", "notEnough": "Nicht genug Dollar", "bought": "Gekauft!", "confirm": "BESTÄTIGEN", "quests": "TÄGLICHE MISSIONEN", "questsB": "MISSIONEN", "claim": "ABHOLEN", "claimed": "ABGEHOLT", "resetIn": "Neue Missionen in {h} Std. {m} Min.", "daily": "Tagesbonus", "earned": "VERDIENT", "eKills": "Kills", "eMass": "Masse", "eTime": "Überleben", "eQuest": "Missionen", "qDone": "MISSION ERFÜLLT", "q_kill": "Erledige {n} Gegner", "q_mass": "Erreiche {n} Masse", "q_parry": "Schaffe {n} perfekte Paraden", "q_time": "Überlebe {n} Minuten in einer Runde", "q_energy": "Sammle {n} Energie", "packOk": "+{n} Dollar hinzugefügt!", "usedCode": "Code auf diesem Gerät bereits benutzt", "session": "Runde"}, "pt": {"tDollars": "DÓLARES", "buyD": "Comprar dólares", "bonusP": "+{n}% BÔNUS", "popular": "MAIS VENDIDO", "bestV": "MELHOR OFERTA", "notEnough": "Dólares insuficientes", "bought": "Comprado!", "confirm": "CONFIRMAR", "quests": "MISSÕES DIÁRIAS", "questsB": "MISSÕES", "claim": "RESGATAR", "claimed": "RESGATADA", "resetIn": "Novas missões em {h} h {m} min", "daily": "Bônus diário", "earned": "GANHOS", "eKills": "Abates", "eMass": "Massa", "eTime": "Sobrevivência", "eQuest": "Missões", "qDone": "MISSÃO CONCLUÍDA", "q_kill": "Elimine {n} inimigos", "q_mass": "Alcance {n} de massa", "q_parry": "Faça {n} defesas perfeitas", "q_time": "Sobreviva {n} minutos em uma partida", "q_energy": "Colete {n} de energia", "packOk": "+{n} dólares adicionados!", "usedCode": "Código já usado neste dispositivo", "session": "partida"}}))if(L[k])Object.assign(L[k],v);
 for(const [k,v] of Object.entries({"it": {"cosmetic": "Gli oggetti a pagamento danno piccoli bonus in partita", "pEnergy": "energia raccolta", "pReach": "portata della lama", "pSpeed": "velocità", "pKill": "massa per uccisione", "perksOn": "BONUS ATTIVI"}, "en": {"cosmetic": "Paid items give small in-game bonuses", "pEnergy": "energy gained", "pReach": "blade reach", "pSpeed": "speed", "pKill": "mass per kill", "perksOn": "ACTIVE BONUSES"}, "es": {"cosmetic": "Los objetos de pago dan pequeñas ventajas en la partida", "pEnergy": "energía recogida", "pReach": "alcance de la hoja", "pSpeed": "velocidad", "pKill": "masa por baja", "perksOn": "BONUS ACTIVOS"}, "fr": {"cosmetic": "Les objets payants donnent de petits bonus en jeu", "pEnergy": "énergie récoltée", "pReach": "portée de la lame", "pSpeed": "vitesse", "pKill": "masse par élimination", "perksOn": "BONUS ACTIFS"}, "de": {"cosmetic": "Bezahlte Gegenstände geben kleine Boni im Spiel", "pEnergy": "gesammelte Energie", "pReach": "Klingenreichweite", "pSpeed": "Tempo", "pKill": "Masse pro Kill", "perksOn": "AKTIVE BONI"}, "pt": {"cosmetic": "Itens pagos dão pequenos bônus na partida", "pEnergy": "energia coletada", "pReach": "alcance da lâmina", "pSpeed": "velocidade", "pKill": "massa por abate", "perksOn": "BÔNUS ATIVOS"}}))if(L[k])Object.assign(L[k],v);
 for(const [k,v] of Object.entries({"it": {"netOn": "ONLINE", "netOff": "Connessione al server…", "netPl": "{n} giocatori", "netWait": "Connessione al server in corso, riprova tra un attimo", "netLost": "Connessione persa, mi riconnetto…"}, "en": {"netOn": "ONLINE", "netOff": "Connecting to server…", "netPl": "{n} players", "netWait": "Connecting to the server, try again in a moment", "netLost": "Connection lost, reconnecting…"}, "es": {"netOn": "EN LÍNEA", "netOff": "Conectando al servidor…", "netPl": "{n} jugadores", "netWait": "Conectando al servidor, inténtalo en un momento", "netLost": "Conexión perdida, reconectando…"}, "fr": {"netOn": "EN LIGNE", "netOff": "Connexion au serveur…", "netPl": "{n} joueurs", "netWait": "Connexion au serveur, réessaie dans un instant", "netLost": "Connexion perdue, reconnexion…"}, "de": {"netOn": "ONLINE", "netOff": "Verbinde mit Server…", "netPl": "{n} Spieler", "netWait": "Verbinde mit dem Server, versuch es gleich nochmal", "netLost": "Verbindung verloren, verbinde neu…"}, "pt": {"netOn": "ONLINE", "netOff": "Conectando ao servidor…", "netPl": "{n} jogadores", "netWait": "Conectando ao servidor, tente de novo em instantes", "netLost": "Conexão perdida, reconectando…"}}))if(L[k])Object.assign(L[k],v);
+for(const [k,v] of Object.entries({"it": {"acctCode": "Il tuo codice account (salvalo: serve per ritrovare acquisti e progressi su un altro dispositivo)", "acctOk": "Account caricato", "payCheck": "Verifico il pagamento…", "payErr": "Pagamento non disponibile, riprova tra poco"}, "en": {"acctCode": "Your account code (save it: you need it to recover purchases and progress on another device)", "acctOk": "Account loaded", "payCheck": "Checking your payment…", "payErr": "Payment unavailable, try again shortly"}, "es": {"acctCode": "Tu código de cuenta (guárdalo: sirve para recuperar compras y progreso en otro dispositivo)", "acctOk": "Cuenta cargada", "payCheck": "Verificando el pago…", "payErr": "Pago no disponible, inténtalo en un momento"}, "fr": {"acctCode": "Ton code de compte (garde-le : il sert à retrouver achats et progression sur un autre appareil)", "acctOk": "Compte chargé", "payCheck": "Vérification du paiement…", "payErr": "Paiement indisponible, réessaie bientôt"}, "de": {"acctCode": "Dein Kontocode (speichere ihn: damit holst du Käufe und Fortschritt auf ein anderes Gerät)", "acctOk": "Konto geladen", "payCheck": "Zahlung wird geprüft…", "payErr": "Zahlung nicht verfügbar, versuch es gleich nochmal"}, "pt": {"acctCode": "Seu código de conta (guarde-o: serve para recuperar compras e progresso em outro dispositivo)", "acctOk": "Conta carregada", "payCheck": "Verificando o pagamento…", "payErr": "Pagamento indisponível, tente novamente em breve"}}))if(L[k])Object.assign(L[k],v);
 let lang=(()=>{try{const s=localStorage.getItem('plasma_lang');if(s&&L[s])return s;}catch(e){}const n=(navigator.language||'en').slice(0,2).toLowerCase();return L[n]?n:'en';})();
 let namesMode='en';try{namesMode=localStorage.getItem('plasma_names')||'en';}catch(e){}
 const T=(k,v)=>{let s=(L[lang][k]!==undefined?L[lang][k]:L.en[k]);if(v&&typeof s==='string')for(const q in v)s=s.replace('{'+q+'}',v[q]);return s;};
@@ -262,14 +264,14 @@ const T=(k,v)=>{let s=(L[lang][k]!==undefined?L[lang][k]:L.en[k]);if(v&&typeof s
 const PAYMENT_LINK='';
 // Link di pagamento per singolo oggetto (es. Stripe Payment Link). Se un oggetto non e' qui, si usa PAYMENT_LINK.
 // Nel link Stripe imposta "Dopo il pagamento -> Reindirizza" a: GAME_URL + '#' + codice dell'oggetto (lo vedi col pulsante 🎟 in modalita' owner).
-const PAY_LINKS={ // Stripe TEST links (sandbox). Replace with live links when going live.
-  d500:'https://buy.stripe.com/test_3cI7sL7hC3mxdYU5ewe7m00',
-  d1100:'https://buy.stripe.com/test_6oU7sL9pKf5f4ok4ase7m01',
-  d3000:'https://buy.stripe.com/test_4gM6oH6dy9KV1c8gXee7m02',
-  d6500:'https://buy.stripe.com/test_6oU6oH59u8GR1c8eP6e7m03',
-  d14000:'https://buy.stripe.com/test_dRmbJ1gSc2it8EAfTae7m04',
+const PAY_LINKS={ // Stripe LIVE (pagamenti reali)
+  d500:'https://buy.stripe.com/eVq28r7lN8cB0fK8ZA8Ra00',
+  d1100:'https://buy.stripe.com/6oU6oH9tVgJ71jO4Jk8Ra01',
+  d3000:'https://buy.stripe.com/cNi7sLgWn0K90fK4Jk8Ra02',
+  d6500:'https://buy.stripe.com/eVqeVd21t3Wl6E84Jk8Ra03',
+  d14000:'https://buy.stripe.com/4gM7sL21tboN0fKdfQ8Ra04',
 };
-const GAME_URL='https://claude.ai/artifact/7wHRkyaDZA6RTy3Lwr5VGN';
+const GAME_URL='https://plasma-io.onrender.com/';
 const OWNER_H=2121273334490870,CODE_SALT='QX5B6AGHQ6R9';
 const cyrb53=(str,seed=7)=>{let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(let i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return 4294967296*(2097151&h2)+(h1>>>0);};
 const SHOP=[
@@ -307,7 +309,7 @@ if(location.hash&&cyrb53(location.hash.slice(1).toUpperCase())===OWNER_H){owner=
 let pendingUnlock=null;
 const hasItem=id=>{const it=SHOP.find(s=>s.id===id);return owner||!it||it.price===0||owned.has(id);};
 if(!eq.hilt||!hasItem(eq.hilt))eq.hilt='h_default';if(!hasItem(eq.skin))eq.skin='s_default';if(!hasItem(eq.trail))eq.trail='t_default';if(!hasItem(eq.kill))eq.kill='k_default';
-const saveShop=()=>{try{localStorage.setItem('plasma_owned',JSON.stringify([...owned]));localStorage.setItem('plasma_eq',JSON.stringify(eq));}catch(e){}};
+const saveShop=()=>{if(ONLINE)return;try{localStorage.setItem('plasma_owned',JSON.stringify([...owned]));localStorage.setItem('plasma_eq',JSON.stringify(eq));}catch(e){}};
 const usdOf=it=>Math.round(it.price*500/50)*50;
 const PACKS=[{id:'d500',usd:500,eur:.99,bonus:0},{id:'d1100',usd:1100,eur:1.99,bonus:10},{id:'d3000',usd:3000,eur:4.99,bonus:20,tag:'popular'},{id:'d6500',usd:6500,eur:9.99,bonus:30},{id:'d14000',usd:14000,eur:19.99,bonus:40,tag:'bestV'}];
 const packCode=(id,nonce)=>'PLS-'+id.toUpperCase()+(nonce?'-'+nonce:'')+'-'+cyrb53(id+(nonce||'')+CODE_SALT).toString(36).slice(-6).toUpperCase();
@@ -364,17 +366,17 @@ function seeded(s){let x=(cyrb53(s)%2147483646)+1;return()=>{x=x*16807%214748364
 let quests=null,qDirty=false;
 function loadQuests(){try{quests=JSON.parse(localStorage.getItem('plasma_q')||'null');}catch(e){quests=null;}
   if(!quests||quests.day!==dayKey()){const R=seeded('q'+dayKey()),pool=[...QDEF];const pick=[];while(pick.length<3)pick.push(pool.splice((R()*pool.length)|0,1)[0]);quests={day:dayKey(),list:pick.map((d,i)=>({t:d.t,n:d.ns[i],r:d.r[i],p:0,c:false,ok:false}))};saveQuests();}}
-const saveQuests=()=>{try{localStorage.setItem('plasma_q',JSON.stringify(quests));}catch(e){}qDirty=false;};
-function questProg(t,v,mode){if(!quests)return;if(quests.day!==dayKey()){loadQuests();}for(const q of quests.list){if(q.t!==t||q.c)continue;const np=mode==='max'?Math.max(q.p,v):q.p+v;if(np===q.p)continue;q.p=np;qDirty=true;
+const saveQuests=()=>{if(ONLINE){qDirty=false;return;}try{localStorage.setItem('plasma_q',JSON.stringify(quests));}catch(e){}qDirty=false;};
+function questProg(t,v,mode){if(ONLINE||!quests)return;if(quests.day!==dayKey()){loadQuests();}for(const q of quests.list){if(q.t!==t||q.c)continue;const np=mode==='max'?Math.max(q.p,v):q.p+v;if(np===q.p)continue;q.p=np;qDirty=true;
   if(!q.ok&&q.p>=q.n){q.ok=true;saveQuests();if(state==='play'){banner(T('qDone'),T('q_'+q.t,{n:q.n}),'#ffd23d');tone(660,1320,.3,'triangle',.06);tone(990,1980,.3,'triangle',.04,.1);}updQBadge();}}}
 function updQBadge(){if(!quests)return;const n=quests.list.filter(q=>q.ok&&!q.c).length;const b=document.getElementById('qBadge');if(!b)return;b.textContent=n;b.classList.toggle('hidden',!n);}
 function wallet(){return stats.usd||0;}
-function addUsd(n,silent){stats.usd=Math.max(0,(stats.usd||0)+n);saveStats();refreshWallet(!silent);}
+function addUsd(n,silent){if(ONLINE)return;stats.usd=Math.max(0,(stats.usd||0)+n);saveStats();refreshWallet(!silent);}
 let walletShown=0,walletAnim=null;
 function refreshWallet(pop){const el=document.getElementById('wAmt');if(!el)return;if(owner){el.textContent='∞';return;}const target=wallet();cancelAnimationFrame(walletAnim);const from=walletShown,t0=performance.now();
   const step=t=>{const k=Math.min(1,(t-t0)/600);walletShown=from+(target-from)*(1-Math.pow(1-k,3));el.textContent=fmtUsd(walletShown);if(k<1)walletAnim=requestAnimationFrame(step);};walletAnim=requestAnimationFrame(step);
   if(pop){const w=document.getElementById('wallet');w.classList.remove('pop');void w.offsetWidth;w.classList.add('pop');}}
-const saveStats=()=>{try{localStorage.setItem('plasma_stats',JSON.stringify(stats));}catch(e){}};
+const saveStats=()=>{if(ONLINE)return;try{localStorage.setItem('plasma_stats',JSON.stringify(stats));}catch(e){}};
 const isUnlocked=m=>!m.unlock||(m.unlock.kills&&stats.kills>=m.unlock.kills)||(m.unlock.mass&&stats.best>=m.unlock.mass);
 let knownUnlocked=new Set(MODELS.filter(isUnlocked).map(m=>m.id));
 function checkUnlocks(){for(const m of MODELS)if(isUnlocked(m)&&!knownUnlocked.has(m.id)){knownUnlocked.add(m.id);banner(T('unlocked'),modelName(m),'#ffd23d');tone(523,1046,.4,'triangle',.07);tone(784,1568,.4,'triangle',.05,.12);}}
@@ -637,7 +639,32 @@ function netMsg(m){
     if(state==='play'){state='menu';$('start').classList.remove('hidden');$('hud').classList.add('hidden');$('topbar').classList.remove('hidden');}
   }else if(m.t==='you'){net.myId=m.id;if(me){me.id=m.id;net.byId.set(m.id,me);if(!players.includes(me))players.push(me);}}
   else if(m.t==='pong'){net.ping=Math.round(performance.now()-m.c);netStatus();}
+  else if(m.t==='acct'){netAcct(m);}
+  else if(m.t==='qdone'){if(state==='play'){banner(T('qDone'),T('q_'+m.q,{n:m.n}),'#ffd23d');tone(660,1320,.3,'triangle',.06);tone(990,1980,.3,'triangle',.04,.1);}}
+  else if(m.t==='bought'){const it=SHOP.find(x=>x.id===m.id);toast('✓ '+T('bought')+' — <b>'+(it?it.n:'')+'</b>');tone(660,1320,.25,'triangle',.06);}
+  else if(m.t==='credited'){toast(coinSvg()+' '+T('packOk',{n:fmtUsd(m.n)}),6000);tone(523,1046,.4,'triangle',.07);tone(784,1568,.4,'triangle',.05,.12);}
+  else if(m.t==='owner'){toast('👑 '+T('ownerOn'));}
+  else if(m.t==='switched'){toast('✓ '+T('acctOk'),4000);}
+  else if(m.t==='err'){toast('✕ '+T(m.k==='notEnough'?'notEnough':m.k==='badCode'?'badCode':'netLost'));}
 }
+
+function netAcct(m){const d=m.d;
+  if(m.token){net.token=m.token;try{localStorage.setItem('plasma_acct',m.token);}catch(e){}}
+  if(m.pay!==undefined)net.pay=m.pay;
+  stats=Object.assign(stats,d.stats,{usd:d.usd});owned=new Set(d.owned);eq=Object.assign({skin:'s_default',hilt:'h_default',trail:'t_default',kill:'k_default'},d.eq);owner=!!d.owner;quests=d.quests;
+  refreshWallet(false);updQBadge();renderPerks();if(shopOpen)renderShop();if(!$('quests').classList.contains('hidden'))renderQuests();if(state==='menu')refreshMenu();
+  if(m.daily){toast(`${coinSvg()} ${T('daily')}: <b>+${m.daily}</b>`,4500);}
+  if(!net.claimed){net.claimed=true;const sid=new URLSearchParams(location.search).get('paid');if(sid){net.send({t:'claim',sid});try{history.replaceState(null,'',location.pathname);}catch(e){}toast(T('payCheck'),5000);}}}
+function renderAcctBox(){const el=document.getElementById('acctBox');if(!el)return;if(!ONLINE||!net.token){el.innerHTML='';return;}
+  el.innerHTML=`${T('acctCode')}: <code>${net.token}</code><button id="acctCp">${T('copy')}</button>`;
+  $('acctCp').onclick=()=>{try{navigator.clipboard.writeText(net.token).then(()=>$('acctCp').textContent='✓',()=>{});}catch(e){}};}
+async function netCheckout(pk,btn){
+  if(!net.token){toast(T('netWait'));return;}if(net.pay===false){toast(T('payOff'));return;}
+  btn.disabled=true;const old=btn.innerHTML;btn.textContent='…';
+  try{const r=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:net.token,pack:pk.id})});const j=await r.json();
+    if(j.url){location.href=j.url;return;}toast('✕ '+T(j.error==='payments_off'?'payOff':'payErr'));}
+  catch(e){toast('✕ '+T('payErr'));}
+  btn.disabled=false;btn.innerHTML=old;}
 function netStatus(){const el=document.getElementById('netSt');if(!el)return;const n=net.online||players.filter(p=>!p.bot&&p.alive).length;
   el.innerHTML=net.ok?`<i style="background:#3dff6e"></i>${T('netOn')} · ${T('netPl',{n:Math.max(n,1)})}${net.ping?` · ${net.ping} ms`:''}`:`<i style="background:#ff2a3d"></i>${T('netOff')}`;}
 net.join=()=>{const m=me;net.send({t:'join',name:m.name,col:selCol<0?null:m.col,model:m.model.id,skin:m.skin,hilt:m.hiltS,trail:m.trailS,kfx:m.kfx,lv:levelOf(stats.xp)});};
@@ -645,7 +672,7 @@ net.send=o=>{if(net.ws&&net.ws.readyState===1)net.ws.send(JSON.stringify(o));};
 function netConnect(){
   const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');net.ws=ws;
   ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data);}catch(e){return;}netMsg(m);};
-  ws.onopen=()=>{net.retry=0;};
+  ws.onopen=()=>{net.retry=0;let tk=null;try{tk=localStorage.getItem('plasma_acct');}catch(e){}ws.send(JSON.stringify({t:'auth',token:tk}));};
   ws.onclose=()=>{net.ok=false;netStatus();if(state==='play')toast(T('netLost'),4000);setTimeout(netConnect,Math.min(8000,1000*(++net.retry)));};
 }
 function lerpHist(h,R){
@@ -656,7 +683,7 @@ function netStep(){
   // stima del tick del server
   const target=net.srvTick+(performance.now()-net.srvAt)*.06;
   net.est=Math.abs(target-net.est)>20?target:net.est+1+(target-net.est)*.05;
-  const R=net.est-5;tick=Math.floor(net.est);
+  const R=net.est-3.5;tick=Math.floor(net.est);
   // eventi in coda fino al tempo di rendering
   while(net.q.length&&net.q[0][0]<=R+1){const e=net.q.shift()[1];
     if(e[0]==='oa')netOrb(e[1]);else if(e[0]==='or')netOrbRem(e[1],e[2]);else netEvent(e);}
@@ -669,7 +696,7 @@ function netStep(){
     if(isMe){humanInput(p);turnBlade(p);}else{p.a=v[2];p.omega=angDiff(p.a,p.pa);}
     if(p.m>p.best)p.best=p.m;}
   // invio input ~30 volte al secondo
-  if(state==='play'&&me&&me.alive&&(tick-net.lastSend>=2||net.dash)){net.lastSend=tick;net.send({t:'in',mx:+(me.mx||0).toFixed(2),my:+(me.my||0).toFixed(2),a:+me.aim.toFixed(3),d:net.dash?1:0});net.dash=false;}
+  if(state==='play'&&me&&me.alive&&(tick-net.lastSend>=1||net.dash)){net.lastSend=tick;net.send({t:'in',mx:+(me.mx||0).toFixed(2),my:+(me.my||0).toFixed(2),a:+me.aim.toFixed(3),b:+me.a.toFixed(3),d:net.dash?1:0});net.dash=false;}
   if(++net.count%120===0){net.send({t:'ping',c:performance.now()});netStatus();}
 }
 if(ONLINE)netConnect();
@@ -1158,10 +1185,10 @@ function drawPreview(c,it,t){const g=c.getContext('2d'),W=c.width,H=c.height,col
 function renderShop(){
   $('ownerBadge').classList.toggle('hidden',!owner);$('payNote').classList.toggle('hidden',!(PAYMENT_LINK||Object.keys(PAY_LINKS).length));
   [...$('tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.c===shopCat));
-  const grid=$('shopGrid');grid.innerHTML='';
+  renderAcctBox();const grid=$('shopGrid');grid.innerHTML='';
   if(shopCat==='usd'){for(const pk of PACKS){const d=document.createElement('div');d.className='item pack'+(pk.tag?' rL':'');if(pk.tag){d.style.setProperty('--rc','#ffd23d');d.style.borderColor='#ffd23d88';}
-      d.innerHTML=`${pk.tag?`<span class="rb" style="color:#ffd23d">${T(pk.tag)}</span>`:''}${pk.bonus?`<span class="bb">${T('bonusP',{n:pk.bonus})}</span>`:''}<canvas width="300" height="168"></canvas><div class="amt">${coinSvg()}${fmtUsd(pk.usd)}</div><div class="row2"><button class="bBuy">${fmtPrice(pk.eur)}</button>${owner?'<button class="bCode" title="code">🎟</button>':''}</div>`;
-      d.querySelector('.bBuy').onclick=()=>{const PL=PAY_LINKS[pk.id]||PAYMENT_LINK;if(PL){const a=document.createElement('a');a.href=PL+(PL.includes('?')?'&':'?')+'client_reference_id='+encodeURIComponent(pk.id);a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();toast(T('payNote'),6000);}else toast(T('payOff'));};
+      d.innerHTML=`${pk.tag?`<span class="rb" style="color:#ffd23d">${T(pk.tag)}</span>`:''}${pk.bonus?`<span class="bb">${T('bonusP',{n:pk.bonus})}</span>`:''}<canvas width="300" height="168"></canvas><div class="amt">${coinSvg()}${fmtUsd(pk.usd)}</div><div class="row2"><button class="bBuy">${fmtPrice(pk.eur)}</button>${owner&&!ONLINE?'<button class="bCode" title="code">🎟</button>':''}</div>`;
+      d.querySelector('.bBuy').onclick=()=>{if(ONLINE){netCheckout(pk,d.querySelector('.bBuy'));return;}const PL=PAY_LINKS[pk.id]||PAYMENT_LINK;if(PL){const a=document.createElement('a');a.href=PL+(PL.includes('?')?'&':'?')+'client_reference_id='+encodeURIComponent(pk.id);a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();toast(T('payNote'),6000);}else toast(T('payOff'));};
       const cB=d.querySelector('.bCode');if(cB)cB.onclick=()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',nonce=Array.from({length:4},()=>A[(Math.random()*A.length)|0]).join(''),code=packCode(pk.id,nonce),stat=packCode(pk.id);
         toast(`${T('codeFor')} <b>${fmtUsd(pk.usd)} $</b><code>${code}</code><div style="font-size:11px;color:#8792ab;word-break:break-all;margin-bottom:6px">Stripe → redirect: ${GAME_URL}#${stat}</div><button id="cpy" style="background:#ffd23d">${T('copy')}</button><button id="tcl" style="background:#2a2e36;color:#fff">${T('close')}</button>`,0);
         $('cpy').onclick=()=>{try{navigator.clipboard.writeText(code).then(()=>$('cpy').textContent='✓',()=>{});}catch(e){}};$('tcl').onclick=()=>$('toast').style.display='none';};
@@ -1170,12 +1197,12 @@ function renderShop(){
   for(const it of SHOP.filter(s=>s.cat===shopCat)){
     const mine=hasItem(it.id),isEq=eq[it.cat]===it.id,d=document.createElement('div'),rr2=rarityOf(it);d.className='item'+(isEq?' eq':'')+(rr2?' r'+rr2:'');if(rr2){d.style.setProperty('--rc',RCOL[rr2]);if(!isEq)d.style.borderColor=RCOL[rr2]+'66';}
     const priceLbl=it.price===0?T('free'):owner?T('free')+' · OWNER':(confirmId===it.id&&Date.now()<confirmT)?T('confirm')+' '+coinSvg()+fmtUsd(usdOf(it)):coinSvg()+fmtUsd(usdOf(it));
-    d.innerHTML=`${rr2?`<span class="rb" style="color:${RCOL[rr2]}">${T('r'+rr2)}</span>`:''}<canvas width="300" height="168"></canvas><b>${it.n}</b>${PCT[it.id]?`<div class="perk">${perkTxt(it.id)}</div>`:''}${it.cat==='hilt'||it.cat==='skin'?`<div class="desc">${(()=>{const D=(it.cat==='hilt'?HDESC:SDESC)[it.id]||{};return D[lang]||D.en||'';})()}</div>`:''}<div class="row2">${isEq?`<button class="bIn">${T('equipped')}</button>`:mine?`<button class="bEq">${T('equip')}</button>`:`<button class="bBuy pbtn">${priceLbl}</button>`}${owner&&it.price>0?'<button class="bCode" title="code">🎟</button>':''}</div>`;
-    const eqB=d.querySelector('.bEq');if(eqB)eqB.onclick=()=>{eq[it.cat]=it.id;saveShop();renderShop();};
+    d.innerHTML=`${rr2?`<span class="rb" style="color:${RCOL[rr2]}">${T('r'+rr2)}</span>`:''}<canvas width="300" height="168"></canvas><b>${it.n}</b>${PCT[it.id]?`<div class="perk">${perkTxt(it.id)}</div>`:''}${it.cat==='hilt'||it.cat==='skin'?`<div class="desc">${(()=>{const D=(it.cat==='hilt'?HDESC:SDESC)[it.id]||{};return D[lang]||D.en||'';})()}</div>`:''}<div class="row2">${isEq?`<button class="bIn">${T('equipped')}</button>`:mine?`<button class="bEq">${T('equip')}</button>`:`<button class="bBuy pbtn">${priceLbl}</button>`}${owner&&!ONLINE&&it.price>0?'<button class="bCode" title="code">🎟</button>':''}</div>`;
+    const eqB=d.querySelector('.bEq');if(eqB)eqB.onclick=()=>{eq[it.cat]=it.id;if(ONLINE)net.send({t:'eq',id:it.id});saveShop();renderShop();};
     const buyB=d.querySelector('.bBuy');if(buyB)buyB.onclick=()=>{const cost=usdOf(it);
       if(wallet()<cost){toast(`${T('notEnough')} — ${coinSvg()} ${fmtUsd(cost-wallet())}`);shopCat='usd';renderShop();return;}
       if(confirmId!==it.id||Date.now()>confirmT){confirmId=it.id;confirmT=Date.now()+3000;renderShop();return;}
-      confirmId=null;addUsd(-cost);owned.add(it.id);eq[it.cat]=it.id;saveShop();toast('✓ '+T('bought')+' — <b>'+it.n+'</b>');tone(660,1320,.25,'triangle',.06);renderShop();};
+      confirmId=null;if(ONLINE){net.send({t:'buy',id:it.id});return;}addUsd(-cost);owned.add(it.id);eq[it.cat]=it.id;saveShop();toast('✓ '+T('bought')+' — <b>'+it.n+'</b>');tone(660,1320,.25,'triangle',.06);renderShop();};
     const cB=d.querySelector('.bCode');if(cB)cB.onclick=()=>{const code=itemCode(it.id);toast(`${T('codeFor')} <b>${it.n}</b><code>${code}</code><div style="font-size:11px;color:#8792ab;word-break:break-all;margin-bottom:6px">Stripe → redirect: ${GAME_URL}#${code}</div><button id="cpy" style="background:#ffd23d">${T('copy')}</button><button id="tcl" style="background:#2a2e36;color:#fff">${T('close')}</button>`,0);
       $('cpy').onclick=()=>{try{navigator.clipboard.writeText(code).then(()=>$('cpy').textContent='✓',()=>{});}catch(e){}};$('tcl').onclick=()=>$('toast').style.display='none';};
     grid.appendChild(d);
@@ -1185,7 +1212,7 @@ function renderShop(){
 function drawPack(c,pk,t){const g=c.getContext('2d'),W=c.width,H=c.height;g.clearRect(0,0,W,H);const n=Math.min(16,2+Math.round(Math.log2(pk.usd/250)*2.4));g.globalCompositeOperation='lighter';g.globalAlpha=.35+.1*Math.sin(t*.05);g.drawImage(glow('#ffd23d'),W/2-110,H/2-90,220,180);g.globalAlpha=1;g.globalCompositeOperation='source-over';
   const stacks=Math.min(5,Math.ceil(n/4));for(let s=0;s<stacks;s++){const cnt=Math.ceil(n/stacks),sx=W/2+(s-(stacks-1)/2)*44;for(let i=0;i<cnt;i++){const y=H*.78-i*9+Math.sin(t*.04+s)*1.5;g.drawImage(COIN_IMG,sx-24,y-24,48,48);}}}
 function drawShopPreviews(){if(shopCat==='usd'){[...$('shopGrid').children].forEach((d,i)=>drawPack(d.querySelector('canvas'),PACKS[i],tick+performance.now()/16));return;}const its=SHOP.filter(s=>s.cat===shopCat);[...$('shopGrid').children].forEach((d,i)=>drawPreview(d.querySelector('canvas'),its[i],tick+performance.now()/16));}
-function redeem(){const raw=$('codeIn').value.trim().toUpperCase();if(!raw)return;
+function redeem(){const raw=$('codeIn').value.trim().toUpperCase();if(!raw)return;if(ONLINE){net.send({t:'code',code:raw});$('codeIn').value='';return;}
   if(cyrb53(raw)===OWNER_H){owner=true;try{localStorage.setItem('plasma_owner','1');}catch(e){}toast('👑 '+T('ownerOn'));}
   else if(redeemPack(raw)){}
   else{const it=SHOP.find(s=>s.price>0&&itemCode(s.id)===raw);if(it){owned.add(it.id);eq[it.cat]=it.id;saveShop();shopCat=it.cat;toast('✓ '+T('okCode')+' — '+it.n);}else{toast('✕ '+T('badCode'));return;}}
@@ -1194,11 +1221,11 @@ function redeemPack(raw){const m=raw.match(/^PLS-(D\d+)(?:-([A-Z0-9]{4}))?-([A-Z
   if(redeemed.has(raw)){toast('✕ '+T('usedCode'));return true;}redeemed.add(raw);try{localStorage.setItem('plasma_red',JSON.stringify([...redeemed]));}catch(e){}addUsd(pk.usd);toast(coinSvg()+' '+T('packOk',{n:fmtUsd(pk.usd)}),5000);tone(523,1046,.4,'triangle',.07);tone(784,1568,.4,'triangle',.05,.12);return true;}
 function hashUnlock(){const raw=(location.hash||'').slice(1).toUpperCase();if(!raw||!raw.startsWith('PLS-'))return;if(redeemPack(raw)){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}if(shopOpen)renderShop();return;}const it=SHOP.find(s=>s.price>0&&itemCode(s.id)===raw);if(!it)return;
   owned.add(it.id);eq[it.cat]=it.id;saveShop();try{history.replaceState(null,'',location.pathname+location.search);}catch(e){try{location.hash='';}catch(e2){}}toast('✓ '+T('okCode')+' — <b>'+it.n+'</b>',6000);if(shopOpen)renderShop();}
-addEventListener('hashchange',hashUnlock);setTimeout(hashUnlock,300);
+if(!ONLINE){addEventListener('hashchange',hashUnlock);setTimeout(hashUnlock,300);}
 function renderQuests(){if(!quests)loadQuests();const L2=$('qList');L2.innerHTML='';
   for(const q of quests.list){const d=document.createElement('div');d.className='qrow'+(q.ok&&!q.c?' done':'');const pr=Math.min(q.n,q.p),pct=Math.round(pr/q.n*100);
     d.innerHTML=`<div style="flex:1"><div class="qt">${T('q_'+q.t,{n:q.n})}</div><div class="qb"><i style="width:${pct}%"></i></div><div class="qp">${q.t==='time'?pr.toFixed(1):Math.floor(pr)} / ${q.n}</div></div><div class="qrw">${coinSvg()}${q.r}</div><button ${q.ok&&!q.c?'':'disabled'}>${q.c?T('claimed'):T('claim')}</button>`;
-    d.querySelector('button').onclick=()=>{if(!q.ok||q.c)return;q.c=true;saveQuests();addUsd(q.r);tone(784,1568,.3,'triangle',.06);renderQuests();updQBadge();};L2.appendChild(d);}
+    d.querySelector('button').onclick=()=>{if(!q.ok||q.c)return;if(ONLINE){net.send({t:'qclaim',i:quests.list.indexOf(q)});tone(784,1568,.3,'triangle',.06);return;}q.c=true;saveQuests();addUsd(q.r);tone(784,1568,.3,'triangle',.06);renderQuests();updQBadge();};L2.appendChild(d);}
   const now=new Date(),mid=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1),ms=mid-now;$('qReset').textContent=T('resetIn',{h:Math.floor(ms/3600000),m:Math.floor(ms/60000)%60});
   $('qDaily').innerHTML=`${T('daily')}: ${coinSvg()} 25`;}
 $('qBtn').onclick=()=>{$('quests').classList.remove('hidden');renderQuests();};
@@ -1214,7 +1241,7 @@ $('menuBtn').onclick=()=>{$('topbar').classList.remove('hidden');deadEl.classLis
 
 // ================= INIT / LOOP =================
 loadQuests();$('topbar').classList.remove('hidden');walletShown=wallet();refreshWallet(false);updQBadge();
-if(stats.lastDaily!==dayKey()){stats.lastDaily=dayKey();setTimeout(()=>{addUsd(25);toast(`${coinSvg()} ${T('daily')}: <b>+25</b>`,4500);},900);saveStats();}
+if(!ONLINE&&stats.lastDaily!==dayKey()){stats.lastDaily=dayKey();setTimeout(()=>{addUsd(25);toast(`${coinSvg()} ${T('daily')}: <b>+25</b>`,4500);},900);saveStats();}
 for(let i=0;i<PELLETS;i++)pellet();
 if(!ONLINE)for(let i=0;i<BOTS;i++){const b=newPlayer(NAMES[i%NAMES.length],true);b.col=COLORS[(Math.random()*7)|0];b.model=botModel();setPersonality(b);botCosmetics(b);players.push(b);spawn(b,Math.random()<.5?rnd(20,60):rnd(60,200));b.born=-999;}
 let last=performance.now(),acc=0;
