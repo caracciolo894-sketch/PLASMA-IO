@@ -341,7 +341,7 @@ class Arena {
         const d = angDiff(p.ba, p.a); p.a += clamp(d, -maxW, maxW); p.omega = p.a - p.aPrev; p.av = p.omega; }
       p.steady = Math.abs(p.omega) * bladeLen(p) < 3 ? (p.steady || 0) + 1 : 0;
       if (p.dashT > 0) p.dashT--; if (p.dashCd > 0) p.dashCd--; if (p.stun > 0) p.stun--; if (p.slowT > 0) p.slowT--; if (p.rageT > 0) p.rageT--; if (p.hideT > 0) p.hideT--; if (p.abCd > 0) p.abCd--;
-      if (p.m > 300) p.m -= (p.m - 300) * .00004;
+      if (p.m > 300) p.m -= (p.m - 300) * .00004 * (1 + p.m / 3000);
       if (p.m > p.best) p.best = p.m;
       (p.ph || (p.ph = [])).push([this.tick, p.x, p.y]); if (p.ph.length > 20) p.ph.shift();
     }

@@ -263,6 +263,7 @@ for(const [k,v] of Object.entries({"it": {"buyOfficial": "I Dollari si comprano 
 for(const [k,v] of Object.entries({"it": {"tBlade": "LAME", "pWidth": "larghezza lama"}, "en": {"tBlade": "BLADES", "pWidth": "blade width"}, "es": {"tBlade": "HOJAS", "pWidth": "ancho de hoja"}, "fr": {"tBlade": "LAMES", "pWidth": "largeur de lame"}, "de": {"tBlade": "KLINGEN", "pWidth": "Klingenbreite"}, "pt": {"tBlade": "LÂMINAS", "pWidth": "largura da lâmina"}}))if(L[k])Object.assign(L[k],v);
 let lang=(()=>{try{const s=localStorage.getItem('plasma_lang');if(s&&L[s])return s;}catch(e){}return 'en';})();
 let namesMode='en';try{namesMode=localStorage.getItem('plasma_names')||'en';}catch(e){}
+for(const [k,v] of Object.entries({it:{tMove:'MUOVI',tAim:'MIRA E COLPISCI',tDash:'SCATTO + ABILITÀ'},en:{tMove:'MOVE',tAim:'AIM & SWING',tDash:'DASH + ABILITY'},es:{tMove:'MUÉVETE',tAim:'APUNTA Y GOLPEA',tDash:'IMPULSO + HABILIDAD'},fr:{tMove:'BOUGE',tAim:'VISE ET FRAPPE',tDash:'DASH + POUVOIR'},de:{tMove:'BEWEGEN',tAim:'ZIELEN & SCHLAGEN',tDash:'DASH + FÄHIGKEIT'},pt:{tMove:'MOVA-SE',tAim:'MIRE E ATAQUE',tDash:'DASH + HABILIDADE'}}))if(L[k])Object.assign(L[k],v);
 const T=(k,v)=>{let s=(L[lang][k]!==undefined?L[lang][k]:L.en[k]);if(v&&typeof s==='string')for(const q in v)s=s.replace('{'+q+'}',v[q]);return s;};
 
 // ================= NEGOZIO =================
@@ -609,15 +610,17 @@ addEventListener('keyup',e=>{keys[e.code]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 cv.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
-const joy={id:null,ox:0,oy:0,x:0,y:0},aimT={id:null};
+const joy={id:null,ox:0,oy:0,x:0,y:0},aimT={id:null};const tut={move:0,aim:0,dash:0,done:(()=>{try{return localStorage.getItem('plasma_tut')==='1';}catch(e){return false;}})()};
+function tutCheck(){if(!tut.done&&tut.move>40&&tut.aim>40&&tut.dash>0){tut.done=true;try{localStorage.setItem('plasma_tut','1');}catch(e){}}}
 cv.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.clientX<vw/2&&joy.id===null){joy.id=t.identifier;joy.ox=joy.x=t.clientX;joy.oy=joy.y=t.clientY;}else if(aimT.id===null){aimT.id=t.identifier;mouse.x=t.clientX;mouse.y=t.clientY;}}},{passive:false});
 cv.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===joy.id){joy.x=t.clientX;joy.y=t.clientY;}else if(t.identifier===aimT.id){mouse.x=t.clientX;mouse.y=t.clientY;}}},{passive:false});
 const tend=e=>{for(const t of e.changedTouches){if(t.identifier===joy.id)joy.id=null;if(t.identifier===aimT.id)aimT.id=null;}};
 cv.addEventListener('touchend',tend);cv.addEventListener('touchcancel',tend);
-document.getElementById('bDash').addEventListener('touchstart',e=>{e.preventDefault();if(state==='play')dash(me);},{passive:false});
+document.getElementById('bDash').addEventListener('touchstart',e=>{e.preventDefault();if(state==='play'){dash(me);tut.dash++;tutCheck();}},{passive:false});
 function humanInput(p){
   let mx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),my=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
-  if(joy.id!==null){const dx=joy.x-joy.ox,dy=joy.y-joy.oy,l=Math.hypot(dx,dy);if(l>8){mx=dx/Math.max(l,50);my=dy/Math.max(l,50);}}
+  if(isTouch&&aimT.id!==null){tut.aim++;tutCheck();}
+  if(joy.id!==null){const dx=joy.x-joy.ox,dy=joy.y-joy.oy,l=Math.hypot(dx,dy);if(l>8){tut.move++;tutCheck();mx=dx/Math.max(l,50);my=dy/Math.max(l,50);}}
   p.mx=mx;p.my=my;
   const sx=(p.x-cam.x)*cam.z+vw/2,sy=(p.y-cam.y)*cam.z+vh/2;p.aim=Math.atan2(mouse.y-sy,mouse.x-sx);
 }
@@ -747,7 +750,7 @@ function update(){
     turnBlade(p);
     p.steady=Math.abs(p.omega)*bladeLen(p)<3?(p.steady||0)+1:0;
     if(p.dashT>0)p.dashT--;if(p.dashCd>0)p.dashCd--;if(p.stun>0)p.stun--;if(p.slowT>0)p.slowT--;if(p.rageT>0)p.rageT--;if(p.hideT>0)p.hideT--;if(p.abCd>0)p.abCd--;
-    if(p.m>300)p.m-=(p.m-300)*.00004;}
+    if(p.m>300)p.m-=(p.m-300)*.00004*(1+p.m/3000);}
     if(p.flash>0)p.flash--;
     if(p.m>p.best)p.best=p.m;
     const bl=bladesAt(p,p.x,p.y,p.a);p.trail.unshift(bl.map(pts=>[pts[0][0],pts[0][1],pts[p.model.shape==='scythe'?1:pts.length-1][0],pts[p.model.shape==='scythe'?1:pts.length-1][1]]));if(p.trail.length>10)p.trail.pop();
@@ -1192,6 +1195,12 @@ function render(){
     for(const o of players)if(o.alive&&o.id===me.nemId)arrow(o.x,o.y,'#ff4a5a','☠');
     if(storm.on)arrow(storm.x,storm.y,'#ffd23d','⚡');
   }
+  if(state==='play'&&isTouch){const pl=.5+.5*Math.sin(tick*.08),hint=!tut.done;ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+    if(joy.id===null){const gx=Math.max(170,vw*.2),gy=vh*.66;ctx.globalAlpha=hint?.55+.25*pl:.18;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(gx,gy,50,0,TAU);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(gx+Math.sin(tick*.05)*(hint?22:0),gy,20,0,TAU);ctx.fill();
+      if(hint){ctx.font='800 15px Rajdhani,sans-serif';ctx.fillStyle='#fff';ctx.fillText('👈 '+T('tMove')+' 👉',gx,gy-72);}}
+    if(hint&&aimT.id===null){const ax=vw*.74,ay=vh*.5;ctx.globalAlpha=.55+.25*pl;ctx.strokeStyle=me?me.col:'#fff';ctx.lineWidth=3;ctx.setLineDash([8,8]);ctx.beginPath();ctx.arc(ax,ay,46+8*pl,0,TAU);ctx.stroke();ctx.setLineDash([]);ctx.font='26px sans-serif';ctx.fillText('👆',ax,ay);ctx.font='800 15px Rajdhani,sans-serif';ctx.fillStyle='#fff';ctx.fillText(T('tAim'),ax,ay-72);}
+    if(hint&&!tut.dash){const b=document.getElementById('bDash').getBoundingClientRect();if(b.width){ctx.globalAlpha=.65+.3*pl;ctx.font='800 14px Rajdhani,sans-serif';ctx.fillStyle='#fff';ctx.textAlign='right';ctx.fillText(T('tDash')+' ➜',b.left-10,b.top+b.height/2);}}
+    ctx.restore();}
   if(state==='play'&&joy.id!==null){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.ox,joy.oy,50,0,TAU);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.25)';ctx.beginPath();ctx.arc(joy.x,joy.y,20,0,TAU);ctx.fill();}
   if(state!=='menu'){const M=isTouch?110:150,mx=14,my=vh-M-14,k=M/WORLD;ctx.fillStyle='rgba(8,10,16,.7)';ctx.fillRect(mx,my,M,M);ctx.strokeStyle='rgba(255,255,255,.12)';ctx.strokeRect(mx,my,M,M);
     if(storm.on){ctx.strokeStyle='#ffd23d';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(mx+storm.x*k,my+storm.y*k,Math.max(4,storm.R*k),0,TAU);ctx.stroke();}
@@ -1202,7 +1211,7 @@ function updCam(dt){
   if(t){const [x,y]=pose(t);let lx=0,ly=0;if(t===me&&!isTouch){lx=clamp((mouse.x-vw/2)/cam.z,-vw*.5/cam.z,vw*.5/cam.z)*.16;ly=clamp((mouse.y-vh/2)/cam.z,-vh*.5/cam.z,vh*.5/cam.z)*.16;}
     const k=1-Math.exp(-dt*.011);cam.x+=(x+lx-cam.x)*k;cam.y+=(y+ly-cam.y)*k;
     // la telecamera si allontana poco: diventando grande, lo vedi davvero
-    const tz=clamp(Math.min(vw,vh)/(700+radius(t.m)*4.5),.38,1.25);cam.z+=(tz-cam.z)*(1-Math.exp(-dt*.003));}
+    const zS=Math.min(vw,vh)*(isTouch?1.5:1),tz=clamp(zS/(700+radius(t.m)*4.5),zS/2800,1.25);cam.z+=(tz-cam.z)*(1-Math.exp(-dt*.003));}
   shake*=Math.exp(-dt*.01);
 }
 
