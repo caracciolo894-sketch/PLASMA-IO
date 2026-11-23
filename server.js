@@ -251,7 +251,7 @@ class Arena {
         if (!q.alive || Math.abs(p.x - q.x) > reach || Math.abs(p.y - q.y) > reach) continue;
         if (i < j) { const w = (bladeW(p) + bladeW(q)) * .5 + 3; outer: for (const a of segs.get(p)) for (const b of segs.get(q)) { const [d2, x, y] = segSegD2(a, b); if (d2 < w * w) { this.clash(p, q, x, y); break outer; } } }
         if (p.stun > 0 || this.tick - q.born < 120) continue;
-        const human = !p.bot, rq = radius(q.m) + bladeW(p) * .75 + (human ? 6 : 2);
+        const human = !p.bot, rq = radius(q.m) + bladeW(p) * .8 + (human ? 6 : 2);
         // compensazione del ritardo: per i giocatori umani controlla il nemico dove lo vedevano sul loro schermo
         let qx = q.x, qy = q.y;
         if (human && Number.isFinite(p.viewR) && q.ph) { const back = clamp(this.tick - p.viewR, 0, 14); if (back > 0) { const want = this.tick - back; for (let k = q.ph.length - 1; k >= 0; k--) if (q.ph[k][0] <= want) { qx = q.ph[k][1]; qy = q.ph[k][2]; break; } } }
