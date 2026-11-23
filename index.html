@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
@@ -141,6 +141,7 @@ button.shopBtn{margin-top:10px;width:100%;max-width:420px;padding:10px;font-fami
 .pack .amt .ci{width:24px;height:24px}
 .pack .bb{position:absolute;right:12px;top:72px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;background:#ff3355;color:#fff;z-index:2}
 .hidden{display:none!important}
+select#langQ option{background:#0a101c;color:#cfe8ff}@media (max-height:520px){.overlay{align-items:flex-start;padding-top:6px}#play{position:sticky;bottom:8px;z-index:3;box-shadow:0 8px 28px rgba(0,0,0,.85)}#lb{transform:scale(.6);transform-origin:top right;right:8px;top:8px}#stats,#sess{transform:scale(.8);transform-origin:top left}#cds{transform:scale(.8);transform-origin:bottom center}}body.touch #cds kbd{display:none}
 </style>
 </head>
 <body>
@@ -151,6 +152,7 @@ button.shopBtn{margin-top:10px;width:100%;max-width:420px;padding:10px;font-fami
 </defs></svg>
 <canvas id="c"></canvas><div id="vig"></div>
 <div id="topbar" class="hidden">
+  <select id="langQ" class="qbtn" title="Language" style="appearance:none;-webkit-appearance:none;padding:9px 12px"><option value="en">🌐 EN</option><option value="it">🌐 IT</option><option value="es">🌐 ES</option><option value="fr">🌐 FR</option><option value="de">🌐 DE</option><option value="pt">🌐 PT</option></select>
   <button id="qBtn" class="qbtn"><span data-t="questsB"></span><i id="qBadge" class="hidden">0</i></button>
   <div class="wallet" id="wallet"><svg class="ci"><use href="#coin"/></svg><b id="wAmt">0</b><button id="wPlus" title="+">+</button></div>
 </div>
@@ -259,7 +261,7 @@ for(const [k,v] of Object.entries({"it": {"acctCode": "Il tuo codice account (sa
 for(const [k,v] of Object.entries({"it": {"spaceK": "SPAZIO", "abFrost": "GELO", "abFrostD": "rallenta i nemici vicini", "abVoid": "PASSO DEL VUOTO", "abVoidD": "teletrasporto e i bot ti perdono", "abSun": "BRILLAMENTO", "abSunD": "respinge e stordisce chi è vicino", "abOni": "FURIA", "abOniD": "dash lungo gratis e lama +20%"}, "en": {"spaceK": "SPACE", "abFrost": "FROST", "abFrostD": "slows nearby enemies", "abVoid": "VOID STEP", "abVoidD": "teleport, bots lose track of you", "abSun": "SOLAR FLARE", "abSunD": "knocks back and stuns nearby enemies", "abOni": "RAGE", "abOniD": "free long dash and +20% blade"}, "es": {"spaceK": "ESPACIO", "abFrost": "HIELO", "abFrostD": "ralentiza a los enemigos cercanos", "abVoid": "PASO DEL VACÍO", "abVoidD": "teletransporte, los bots te pierden", "abSun": "LLAMARADA", "abSunD": "empuja y aturde a los cercanos", "abOni": "FURIA", "abOniD": "dash largo gratis y hoja +20%"}, "fr": {"spaceK": "ESPACE", "abFrost": "GEL", "abFrostD": "ralentit les ennemis proches", "abVoid": "PAS DU NÉANT", "abVoidD": "téléportation, les bots te perdent", "abSun": "ÉRUPTION", "abSunD": "repousse et étourdit les proches", "abOni": "RAGE", "abOniD": "dash long gratuit et lame +20%"}, "de": {"spaceK": "LEERTASTE", "abFrost": "FROST", "abFrostD": "verlangsamt Gegner in der Nähe", "abVoid": "LEERENSCHRITT", "abVoidD": "Teleport, Bots verlieren dich", "abSun": "SONNENSTURM", "abSunD": "stößt Gegner weg und betäubt sie", "abOni": "WUT", "abOniD": "gratis langer Dash und Klinge +20%"}, "pt": {"spaceK": "ESPAÇO", "abFrost": "GELO", "abFrostD": "desacelera inimigos próximos", "abVoid": "PASSO DO VAZIO", "abVoidD": "teleporte, os bots te perdem", "abSun": "EXPLOSÃO SOLAR", "abSunD": "empurra e atordoa quem está perto", "abOni": "FÚRIA", "abOniD": "dash longo grátis e lâmina +20%"}}))if(L[k])Object.assign(L[k],v);
 for(const [k,v] of Object.entries({"it": {"buyOfficial": "I Dollari si comprano sul sito ufficiale: si è aperto in una nuova scheda", "playOnline": "GIOCA ONLINE CON TUTTI"}, "en": {"buyOfficial": "Dollars are sold on the official site: it opened in a new tab", "playOnline": "PLAY ONLINE WITH EVERYONE"}, "es": {"buyOfficial": "Los dólares se compran en el sitio oficial: se abrió en otra pestaña", "playOnline": "JUEGA ONLINE CON TODOS"}, "fr": {"buyOfficial": "Les dollars s’achètent sur le site officiel : il s’est ouvert dans un nouvel onglet", "playOnline": "JOUER EN LIGNE AVEC TOUS"}, "de": {"buyOfficial": "Dollars gibt es auf der offiziellen Seite: sie wurde in einem neuen Tab geöffnet", "playOnline": "ONLINE MIT ALLEN SPIELEN"}, "pt": {"buyOfficial": "Os dólares são comprados no site oficial: ele abriu em outra aba", "playOnline": "JOGUE ONLINE COM TODOS"}}))if(L[k])Object.assign(L[k],v);
 for(const [k,v] of Object.entries({"it": {"tBlade": "LAME", "pWidth": "larghezza lama"}, "en": {"tBlade": "BLADES", "pWidth": "blade width"}, "es": {"tBlade": "HOJAS", "pWidth": "ancho de hoja"}, "fr": {"tBlade": "LAMES", "pWidth": "largeur de lame"}, "de": {"tBlade": "KLINGEN", "pWidth": "Klingenbreite"}, "pt": {"tBlade": "LÂMINAS", "pWidth": "largura da lâmina"}}))if(L[k])Object.assign(L[k],v);
-let lang=(()=>{try{const s=localStorage.getItem('plasma_lang');if(s&&L[s])return s;}catch(e){}const n=(navigator.language||'en').slice(0,2).toLowerCase();return L[n]?n:'en';})();
+let lang=(()=>{try{const s=localStorage.getItem('plasma_lang');if(s&&L[s])return s;}catch(e){}return 'en';})();
 let namesMode='en';try{namesMode=localStorage.getItem('plasma_names')||'en';}catch(e){}
 const T=(k,v)=>{let s=(L[lang][k]!==undefined?L[lang][k]:L.en[k]);if(v&&typeof s==='string')for(const q in v)s=s.replace('{'+q+'}',v[q]);return s;};
 
@@ -601,7 +603,7 @@ function botThink(b){
 
 // ================= INPUT =================
 const keys={},mouse={x:innerWidth/2,y:innerHeight/2};
-const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;if(isTouch)document.body.classList.add('touch');
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'){if(e.key==='Enter')startGame();return;}if(e.target.tagName==='SELECT')return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(state==='play')dash(me);else if(state==='dead'&&!deadEl.classList.contains('hidden'))startGame();}if(e.code==='KeyM')muted=!muted;});
 addEventListener('keyup',e=>{keys[e.code]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
@@ -1227,7 +1229,7 @@ const colEl=$('colors');
 {const d=document.createElement('div');d.className='rnd';d.dataset.ci=-1;d.textContent='?';d.onclick=()=>{selCol=-1;refreshMenu();};colEl.appendChild(d);}
 const modEl=$('models');
 function applyLang(){
-  document.documentElement.lang=lang;
+  document.documentElement.lang=lang;{const q=document.getElementById('langQ');if(q)q.value=lang;}
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=T(e.dataset.t));
   document.querySelectorAll('[data-th]').forEach(e=>e.innerHTML=T(e.dataset.th));
   $('name').placeholder=T('name');$('langSel').value=lang;
@@ -1257,6 +1259,7 @@ function refreshMenu(){
 [...$('gfxSeg').children].forEach(b=>b.onclick=()=>{GQ=+b.dataset.v;PCAP=[120,280,450][GQ];try{localStorage.setItem('plasma_gq',GQ);}catch(e){}resize();[...$('gfxSeg').children].forEach(x=>x.classList.toggle('on',+x.dataset.v===GQ));});
 [...$('gfxSeg').children].forEach(x=>x.classList.toggle('on',+x.dataset.v===GQ));
 $('langSel').onchange=e=>{lang=e.target.value;try{localStorage.setItem('plasma_lang',lang);}catch(x){}applyLang();};
+$('langQ').onchange=e=>{lang=e.target.value;try{localStorage.setItem('plasma_lang',lang);}catch(x){}$('langSel').value=lang;applyLang();};
 [...$('namesSeg').children].forEach(b=>b.onclick=()=>{namesMode=b.dataset.v;try{localStorage.setItem('plasma_names',namesMode);}catch(x){}applyLang();});
 setInterval(()=>{if(state==='menu'&&selCol<0){previewCol=COLORS[(Math.random()*7)|0];refreshMenu();}},2000);
 if(isTouch){$('helpD').classList.add('hidden');$('helpT').classList.remove('hidden');}
